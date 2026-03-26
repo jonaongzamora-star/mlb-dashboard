@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚾ Prof Picks MLB Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #020917; color: #f1f5f9; font-family: "Segoe UI", sans-serif; min-height: 100vh; font-size: 15px; }
+button { cursor: pointer; font-family: inherit; }
+pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: break-word; }
+#header { background: linear-gradient(135deg, #0f172a 0%, #1a2e1a 100%); border-bottom: 1px solid #2d3748; padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+#header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.prof { color: #818cf8; } .fire { color: #fb923c; } .dim { color: #94a3b8; }
+.sub { color: #94a3b8; font-size: 13px; margin-top: 4px; }
+.date-badge { background: #1e293b; border-radius: 8px; padding: 7px 16px; font-size: 18px; font-weight: 700; color: #f1f5f9; }
+#tabs { display: flex; gap: 2px; padding: 10px 28px; background: #0f172a; border-bottom: 1px solid #2d3748; overflow-x: auto; }
+.tab-btn { background: transparent; color: #94a3b8; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; white-space: nowrap; transition: all 0.15s; font-weight: 500; }
+.tab-btn.active { background: #16a34a; color: #fff; font-weight: 700; }
+.tab-btn:hover:not(.active) { color: #e2e8f0; background: #1e293b; }
+.view { display: none; padding: 24px 28px; max-width: 1200px; }
+.view.active { display: block; }
+
+/* Player Lists */
+.plist-wrap { display: flex; gap: 24px; flex-wrap: wrap; }
+.plist-col { flex: 1; min-width: 300px; background: #0f172a; border-radius: 12px; padding: 18px; }
+.plist-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+.plist-subtitle { font-size: 12px; color: #64748b; margin-bottom: 14px; }
+.field-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+.field-input { width: 100%; background: #1e293b; border: 1.5px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 13px; padding: 7px 10px; margin-bottom: 10px; }
+.field-input:focus { outline: none; border-color: #6366f1; }
+.field-textarea { width: 100%; background: #1e293b; border: 1.5px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 13px; padding: 7px 10px; resize: vertical; }
+.field-textarea:focus { outline: none; border-color: #6366f1; }
+.player-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; padding: 8px; border-radius: 8px; background: #1e293b; flex-wrap: wrap; }
+.player-row.hit { background: #052e16; }
+.player-row.miss { background: #1c0a09; }
+.player-row.dnp { background: #1c1708; border: 1.5px solid #ca8a04; }
+.player-row.dnp input { color: #fef08a !important; }
+.pi { background: #0f172a; border: 1.5px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 13px; padding: 5px 8px; }
+.pi:focus { outline: none; border-color: #6366f1; }
+.pi.name { flex: 2; min-width: 120px; }
+.pi.opp { flex: 1; min-width: 60px; }
+.pi.stars { width: 70px; }
+.pi.team1 { flex: 1; min-width: 60px; }
+.pi.team2 { flex: 1; min-width: 60px; }
+.pstatus-btn { border: 1.5px solid #334155; border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 700; background: #1e293b; color: #94a3b8; white-space: nowrap; }
+.pstatus-btn.hit { background: #14532d; color: #4ade80; border-color: #22c55e; }
+.pstatus-btn.miss { background: #7f1d1d; color: #f87171; border-color: #ef4444; }
+.pstatus-btn.dnp { background: #713f12; color: #fef08a; border-color: #ca8a04; }
+.premove { background: none; border: none; color: #475569; font-size: 13px; padding: 2px 6px; }
+.premove:hover { color: #ef4444; }
+.add-player-btn { background: #1e293b; border: 1.5px dashed #334155; border-radius: 8px; color: #64748b; font-size: 13px; padding: 8px; width: 100%; margin-top: 6px; }
+.add-player-btn:hover { border-color: #6366f1; color: #a5b4fc; }
+.preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.preview-label { color: #cbd5e1; font-size: 13px; font-weight: 700; }
+.preview-box { background: #0f172a; border: 1px solid #2d3748; border-radius: 10px; color: #e2e8f0; font-size: 13px; line-height: 1.9; padding: 18px; }
+.plist-preview-wrap { margin-top: 14px; }
+.copy-btn { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 5px 14px; font-size: 12px; font-weight: 700; }
+.copy-btn:hover { background: #15803d; }
+.copy-btn.ok { background: #0f4c29; }
+
+/* Undo bar */
+.undo-bar { display:none; align-items:center; gap:12px; background:#1e293b; border:1.5px solid #f59e0b; border-radius:8px; padding:8px 16px; margin-top:6px; }
+.undo-bar.show { display:flex; }
+.undo-msg { font-size:13px; color:#f59e0b; }
+.undo-timer { font-size:11px; color:#f59e0b; min-width:28px; }
+.undo-btn { background:#f59e0b; color:#000; border:none; border-radius:6px; padding:4px 14px; font-size:13px; font-weight:700; }
+.undo-btn:hover { background:#d97706; }
+.player-warning { font-size:11px; color:#f87171; background:#450a0a; border-radius:4px; padding:1px 6px; margin-left:4px; display:inline-block; }
+
+/* Scripts */
+.scripts-wrap { display: flex; gap: 20px; }
+.scripts-sidebar { width: 210px; flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
+.scripts-sidebar-wrap { width: 210px; flex-shrink: 0; }
+.script-btn, .snav-btn { background: #1e293b; border: none; border-radius: 8px; color: #94a3b8; font-size: 13px; padding: 8px 12px; text-align: left; width: 100%; }
+.script-btn:hover, .snav-btn:hover { background: #334155; color: #f1f5f9; }
+.script-btn.active, .snav-btn.active { background: #16a34a; color: #fff; font-weight: 700; }
+.scripts-content { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.script-card { background: #1e293b; border-radius: 10px; padding: 14px; }
+.script-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.script-label { font-size: 13px; font-weight: 700; color: #cbd5e1; }
+.script-text { color: #94a3b8; font-size: 13px; line-height: 1.8; white-space: pre-wrap; }
+.script-edit-btn { background: none; border: 1.5px solid #334155; border-radius: 6px; color: #64748b; font-size: 12px; padding: 2px 8px; cursor: pointer; margin-left: 4px; }
+.script-edit-btn:hover { border-color: #6366f1; color: #a5b4fc; }
+.script-del-btn { background: none; border: none; color: #475569; font-size: 13px; cursor: pointer; margin-left: 4px; }
+.script-del-btn:hover { color: #ef4444; }
+.script-drag-handle { cursor: grab; color: #475569; font-size: 14px; padding: 2px 6px; user-select: none; }
+.script-drag-handle:hover { color: #94a3b8; }
+.script-card.dragging { opacity: 0.4; border: 1.5px dashed #6366f1; }
+.script-card.drag-over { border-top: 2px solid #6366f1; }
+.script-add-form { background: #1e293b; border: 1.5px solid #334155; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.script-add-form-title { font-size: 13px; font-weight: 700; color: #a5b4fc; }
+.scripts-search-wrap { margin-bottom: 14px; position: relative; }
+.scripts-search { width: 100%; background: #1e293b; border: 1.5px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 13px; padding: 8px 12px 8px 34px; box-sizing: border-box; }
+.scripts-search:focus { outline: none; border-color: #6366f1; }
+.scripts-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #475569; font-size: 14px; pointer-events: none; }
+
+/* History */
+.history-wrap { display: flex; flex-direction: column; gap: 24px; }
+.history-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.history-log-btn { background: #16a34a; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.history-log-btn:hover { background: #15803d; }
+.history-clear-btn { background: #1e293b; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
+.history-clear-btn:hover { background: #ef4444; color: #fff; }
+.history-section-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+.history-table-wrap { overflow-x: auto; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.history-table th { background: #1e293b; color: #94a3b8; font-weight: 600; padding: 8px 12px; text-align: left; border-bottom: 1.5px solid #334155; white-space: nowrap; }
+.history-table td { padding: 8px 12px; border-bottom: 1px solid #1e293b; color: #e2e8f0; vertical-align: middle; }
+.history-table tr:hover td { background: #1e293b44; }
+.history-table td.player-col { font-weight: 600; white-space: nowrap; }
+.streak-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.streak-hit { background: #14532d; color: #4ade80; }
+.streak-miss { background: #450a0a; color: #f87171; }
+.streak-none { background: #1e293b; color: #64748b; }
+.result-dot { display: inline-block; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; line-height: 22px; text-align: center; font-weight: 700; margin: 1px; }
+.result-dot.hit { background: #14532d; color: #4ade80; }
+.result-dot.miss { background: #450a0a; color: #f87171; }
+.result-dot.pending { background: #1e293b; color: #475569; }
+.history-empty { color: #475569; font-size: 13px; padding: 20px 0; }
+.history-divider { border: none; border-top: 1.5px solid #1e293b; margin: 8px 0 16px; }
+
+/* Best/Worst */
+.bw-wrap { display: flex; flex-direction: column; gap: 16px; }
+.bw-section-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 10px; }
+.bw-lists { display: flex; gap: 20px; flex-wrap: wrap; }
+.bw-col { flex: 1; min-width: 260px; }
+.bw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.bw-table th { background: #1e293b; color: #94a3b8; font-weight: 600; padding: 7px 12px; text-align: left; border-bottom: 1.5px solid #334155; }
+.bw-table td { padding: 7px 12px; border-bottom: 1px solid #1e293b; color: #e2e8f0; }
+.bw-rate { font-weight: 700; }
+.bw-hot { color: #4ade80; }
+.bw-cold { color: #f87171; }
+.bw-mid { color: #94a3b8; }
+.bw-bar-wrap { width: 80px; background: #0f172a; border-radius: 999px; height: 6px; display: inline-block; vertical-align: middle; }
+.bw-bar-fill { height: 6px; border-radius: 999px; }
+.bw-empty { color: #475569; font-size: 13px; padding: 10px 0; }
+.bw-label { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 999px; margin-left: 6px; }
+.bw-label-hot { background: #14532d; color: #4ade80; }
+.bw-label-cold { background: #450a0a; color: #f87171; }
+
+/* Recap Monitor */
+.recap-wrap { display: flex; flex-direction: column; gap: 24px; }
+.recap-lists { display: flex; gap: 20px; flex-wrap: wrap; }
+.recap-list-col { flex: 1; min-width: 280px; }
+.recap-list-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
+.recap-alert { background: linear-gradient(135deg, #7c3aed22, #6366f133); border: 1.5px solid #6366f1; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+.recap-alert.hidden { display: none; }
+.recap-alert-icon { font-size: 24px; }
+.recap-alert-text { font-size: 13px; color: #e2e8f0; line-height: 1.6; }
+.recap-alert-text strong { color: #a78bfa; }
+.recap-log-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.recap-date-input { background: #1e293b; border: 1.5px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 13px; padding: 6px 10px; width: 110px; }
+.recap-score-select { background: #1e293b; border: 1.5px solid #334155; border-radius: 6px; color: #f1f5f9; font-size: 13px; padding: 6px 10px; cursor: pointer; }
+.recap-add-btn { background: #16a34a; color: #fff; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.recap-add-btn:hover { background: #15803d; }
+.recap-entries { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.recap-entry { display: flex; align-items: center; justify-content: space-between; background: #1e293b; border-radius: 8px; padding: 8px 14px; }
+.recap-entry-left { display: flex; align-items: center; gap: 10px; }
+.recap-entry-date { font-size: 12px; color: #64748b; }
+.recap-score-badge { font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 999px; }
+.score-44 { background: #431407; color: #fb923c; border: 1px solid #f97316; }
+.score-34 { background: #14532d; color: #4ade80; border: 1px solid #22c55e; }
+.score-24 { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }
+.score-14 { background: #1e293b; color: #64748b; border: 1px solid #1e293b; }
+.recap-del-btn { background: none; border: none; color: #475569; font-size: 13px; cursor: pointer; }
+.recap-del-btn:hover { color: #ef4444; }
+.recap-empty { color: #475569; font-size: 13px; padding: 10px 0; }
+.recap-streak-bar { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.recap-streak-dot { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.recap-view-btn { background: none; border: 1.5px solid #334155; border-radius: 6px; color: #64748b; font-size: 12px; padding: 2px 8px; cursor: pointer; }
+.recap-view-btn:hover { border-color: #6366f1; color: #a5b4fc; }
+.recap-popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.recap-popup { background: #1e293b; border: 1.5px solid #6366f1; border-radius: 12px; padding: 20px; min-width: 280px; max-width: 420px; width: 90%; }
+.recap-popup-title { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+.recap-popup-close { background: none; border: none; color: #64748b; font-size: 18px; cursor: pointer; }
+.recap-popup-player { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #0f172a; font-size: 13px; color: #e2e8f0; }
+.recap-popup-player:last-child { border-bottom: none; }
+.recap-popup-empty { color: #475569; font-size: 13px; }
+
+/* Comment Bank */
+.data-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 0 4px; }
+.export-btn { background: #1e293b; border: 1.5px solid #16a34a; color: #86efac; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.export-btn:hover { background: #16a34a; color: #fff; }
+.import-btn { background: #1e293b; border: 1.5px solid #334155; color: #94a3b8; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.import-btn:hover { background: #334155; color: #fff; }
+.backup-reminder { background: #1e293b; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.backup-reminder.hidden { display: none; }
+.backup-reminder-text { font-size: 13px; color: #fcd34d; flex: 1; }
+.backup-dismiss-btn { background: none; border: none; color: #f59e0b; font-size: 18px; cursor: pointer; }
+.sync-bar { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+.sync-btn { background: #1e293b; border: 1.5px solid #16a34a; color: #86efac; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.sync-btn:hover { background: #16a34a; color: #fff; }
+.sync-status { font-size: 12px; color: #64748b; }
+.sync-status.ok { color: #4ade80; }
+.sync-status.err { color: #f87171; }
+
+/* Filters */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.filter-group { display: flex; gap: 4px; flex-wrap: wrap; }
+.filter-btn { background: #1e293b; border: none; border-radius: 6px; color: #94a3b8; font-size: 12px; padding: 5px 12px; }
+.filter-btn.active { background: #16a34a; color: #fff; font-weight: 700; }
+.filter-count { font-size: 12px; color: #64748b; margin-left: 8px; }
+
+/* Schedule */
+.schedule-list { display: flex; flex-direction: column; gap: 8px; }
+.task-item { background: #1e293b; border-radius: 10px; padding: 12px 16px; cursor: pointer; border: 1.5px solid transparent; }
+.task-item.done { background: #052e16; border-color: #166534; }
+.task-item:hover { border-color: #334155; }
+.task-header { display: flex; align-items: center; gap: 10px; }
+.task-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+.task-item.done .task-check { background: #16a34a; border-color: #16a34a; color: #fff; }
+.task-time { font-size: 11px; color: #64748b; min-width: 80px; }
+.task-name { font-size: 14px; font-weight: 600; color: #f1f5f9; flex: 1; }
+.task-platform { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+.plat-discord { background: #3730a3; color: #a5b4fc; }
+.plat-twitter { background: #0c4a6e; color: #7dd3fc; }
+.plat-dubclub { background: #713f12; color: #fcd34d; }
+.task-brand { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+.brand-prof { background: #312e81; color: #a5b4fc; }
+.brand-fire { background: #431407; color: #fb923c; }
+.task-notes-wrap { margin-top: 10px; padding-top: 10px; border-top: 1px solid #334155; display: none; }
+.task-notes-wrap.open { display: block; }
+.task-notes-section { font-size: 11px; font-weight: 700; color: #f1f5f9; text-transform: uppercase; margin-bottom: 6px; }
+.task-notes-list { list-style: none; padding: 0; }
+.task-notes-list li { font-size: 13px; color: #94a3b8; padding: 3px 0 3px 12px; position: relative; }
+.task-notes-list li::before { content: "•"; position: absolute; left: 0; color: #475569; }
+.task-links { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.task-link-btn { font-size: 12px; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+.task-link-doc { background: #4c1d95; color: #c4b5fd; }
+.progress-track { height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 16px; }
+.progress-fill { height: 4px; background: #16a34a; border-radius: 2px; transition: width 0.3s; }
+
+@media (max-width: 768px) {
+  .view { padding: 16px; }
+  .plist-wrap, .bw-lists, .recap-lists { flex-direction: column; }
+  .scripts-wrap { flex-direction: column; }
+  .scripts-sidebar-wrap, .scripts-sidebar { width: 100%; }
+  .tab-btn { padding: 7px 10px; font-size: 12px; }
+  .pi.name { width: 100% !important; }
+}
+</style>
+</head>
+<body>
+<div id="header">
+  <div>
+    <h1>⚾ <span class="prof">Prof Picks MLB</span> <span class="dim">Dashboard</span></h1>
+    <div class="sub">VA Operations Center — MLB Edition</div>
+  </div>
+  <div class="date-badge" id="date-badge"></div>
+</div>
+
+<div id="tabs">
+  <button class="tab-btn active" id="tab-players" onclick="switchTab('players')">⚾ Player Lists</button>
+  <button class="tab-btn" id="tab-scripts" onclick="switchTab('scripts')">📋 Scripts</button>
+  <button class="tab-btn" id="tab-history" onclick="switchTab('history')">📊 History</button>
+  <button class="tab-btn" id="tab-rankings" onclick="switchTab('rankings')">📈 Rankings</button>
+  <button class="tab-btn" id="tab-recap" onclick="switchTab('recap')">🏆 Recap Monitor</button>
+  <button class="tab-btn" id="tab-comments" onclick="switchTab('comments')">💬 Comment Bank</button>
+  <button class="tab-btn" id="tab-schedule" onclick="switchTab('schedule')">✅ Daily Checklist</button>
+</div>
+
+<!-- PLAYER LISTS TAB -->
+<div id="view-players" class="view active">
+  <div class="data-bar">
+    <button class="export-btn" onclick="exportAllData()">💾 Export Backup</button>
+    <button class="import-btn" onclick="document.getElementById('import-file').click()">📂 Import Backup</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importAllData(this)"/>
+  </div>
+  <div class="backup-reminder hidden" id="backup-reminder">
+    <span class="backup-reminder-text">💾 It's been a while — consider exporting a backup of your data!</span>
+    <button class="backup-dismiss-btn" onclick="dismissBackupReminder()">✕</button>
+  </div>
+
+  <div class="plist-wrap">
+    <!-- List 1: HR Threats -->
+    <div class="plist-col">
+      <div class="plist-title">💣 List 1 — HR Threats</div>
+      <div class="plist-subtitle" id="l1-subtitle">0 hit · 0 miss · 0 pending</div>
+      <label class="field-label">Date</label>
+      <input class="field-input" id="l1-date" oninput="updatePlayerLists()"/>
+      <div id="l1-players"></div>
+      <button class="add-player-btn" onclick="addPlayer(1)">+ Add Player</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;">
+        <button class="copy-btn" style="background:#16a34a;" id="l1-copy-btn" onclick="copyList(1)">Copy</button>
+        <button class="copy-btn" style="background:#991b1b;color:#fca5a5;" onclick="clearList(1)">Clear</button>
+        <div class="undo-bar" id="undo-bar-1"><span class="undo-msg">⚠️ List 1 cleared</span><button class="undo-btn" onclick="undoClear(1)">↩ Undo</button><span class="undo-timer" id="undo-timer-1"></span></div>
+      </div>
+      <div class="plist-preview-wrap">
+        <div class="preview-header"><span class="preview-label">Preview</span></div>
+        <pre class="preview-box" id="l1-preview"></pre>
+      </div>
+    </div>
+
+    <!-- List 2: NRFI -->
+    <div class="plist-col">
+      <div class="plist-title">🚫 List 2 — NRFI</div>
+      <div class="plist-subtitle" id="l2-subtitle">0 hit · 0 miss · 0 pending</div>
+      <label class="field-label">Date</label>
+      <input class="field-input" id="l2-date" oninput="updatePlayerLists()"/>
+      <div id="l2-players"></div>
+      <button class="add-player-btn" onclick="addPlayer(2)">+ Add Matchup</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;">
+        <button class="copy-btn" style="background:#16a34a;" id="l2-copy-btn" onclick="copyList(2)">Copy</button>
+        <button class="copy-btn" style="background:#991b1b;color:#fca5a5;" onclick="clearList(2)">Clear</button>
+        <div class="undo-bar" id="undo-bar-2"><span class="undo-msg">⚠️ List 2 cleared</span><button class="undo-btn" onclick="undoClear(2)">↩ Undo</button><span class="undo-timer" id="undo-timer-2"></span></div>
+      </div>
+      <div class="plist-preview-wrap">
+        <div class="preview-header"><span class="preview-label">Preview</span></div>
+        <pre class="preview-box" id="l2-preview"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS TAB -->
+<div id="view-scripts" class="view">
+  <div class="sync-bar" style="margin-bottom:14px;">
+    <span class="sync-status" id="sync-status-scripts"></span>
+    <button class="export-btn" style="font-size:12px;padding:5px 12px;" onclick="toggleAddScriptForm()">➕ Add Script</button>
+  </div>
+  <div class="scripts-wrap">
+    <div class="scripts-sidebar-wrap">
+      <div class="scripts-search-wrap">
+        <span class="scripts-search-icon">🔍</span>
+        <input class="scripts-search" id="scripts-search-input" placeholder="Search scripts..." oninput="filterScripts(this.value)"/>
+      </div>
+      <div class="scripts-sidebar" id="scripts-sidebar"></div>
+    </div>
+    <div class="scripts-content" id="scripts-content"></div>
+    <div class="script-add-form" id="script-add-form" style="display:none;">
+      <div class="script-add-form-title">➕ Add New Script</div>
+      <input class="field-input" id="new-script-section" placeholder="Section name (e.g. HR Threats Script)"/>
+      <input class="field-input" id="new-script-label" placeholder="Script label (e.g. Script 1 — Hype)"/>
+      <textarea class="field-textarea" id="new-script-text" rows="5" placeholder="Paste script text here..."></textarea>
+      <div style="display:flex;gap:8px;">
+        <button class="recap-add-btn" onclick="addNewScript()">💾 Save Script</button>
+        <button class="history-clear-btn" style="padding:6px 14px;font-size:13px;" onclick="toggleAddScriptForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY TAB -->
+<div id="view-history" class="view">
+  <div class="history-wrap">
+    <div class="history-top">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#f1f5f9;">📊 Player Hit History</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">Auto-pulled from Player Lists. Log after results are in.</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div class="undo-bar" id="undo-bar-history"><span class="undo-msg">⚠️ History cleared</span><button class="undo-btn" onclick="undoClearHistory()">↩ Undo</button><span class="undo-timer" id="undo-timer-history"></span></div>
+        <button class="history-clear-btn" onclick="clearHistory()">🗑 Clear All</button>
+        <button class="history-log-btn" onclick="logToday()">📥 Log Today's Results</button>
+      </div>
+    </div>
+    <div>
+      <div class="history-section-title">💣 List 1 — HR Threats</div>
+      <hr class="history-divider">
+      <div class="history-table-wrap" id="history-table-1"><div class="history-empty">No history yet.</div></div>
+    </div>
+    <div>
+      <div class="history-section-title">🚫 List 2 — NRFI</div>
+      <hr class="history-divider">
+      <div class="history-table-wrap" id="history-table-2"><div class="history-empty">No history yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- RANKINGS TAB -->
+<div id="view-rankings" class="view">
+  <div class="bw-wrap">
+    <div style="font-size:16px;font-weight:700;color:#f1f5f9;">📈 Player Rankings</div>
+    <div style="font-size:12px;color:#64748b;margin-top:-10px;">Pulled from History tab.</div>
+    <div class="bw-lists">
+      <div class="bw-col">
+        <div class="bw-section-title">💣 List 1 — HR Threats</div>
+        <div id="bw-table-1"><div class="bw-empty">No history logged yet.</div></div>
+      </div>
+      <div class="bw-col">
+        <div class="bw-section-title">🚫 List 2 — NRFI</div>
+        <div id="bw-table-2"><div class="bw-empty">No history logged yet.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECAP MONITOR TAB -->
+<div id="view-recap" class="view">
+  <div class="recap-wrap">
+    <div class="recap-alert hidden" id="recap-alert-1">
+      <div class="recap-alert-icon">🚨</div>
+      <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>HR Threats hit 75%+ in 3 of the last 5 days.</div>
+    </div>
+    <div class="recap-alert hidden" id="recap-alert-2">
+      <div class="recap-alert-icon">🚨</div>
+      <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>NRFI hit 75%+ in 3 of the last 5 days.</div>
+    </div>
+    <div class="hidden" id="recap-draft-wrap" style="background:#1e293b;border:1.5px solid #16a34a;border-radius:10px;padding:16px;margin-top:4px;">
+      <div style="font-size:13px;font-weight:700;color:#86efac;margin-bottom:12px;">📝 Recap Draft</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="recap-add-btn" onclick="generateRecapDraft(1)">💣 Generate HR Threats Draft</button>
+        <button class="recap-add-btn" onclick="generateRecapDraft(2)">🚫 Generate NRFI Draft</button>
+      </div>
+      <textarea id="recap-draft-text" style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:14px;color:#e2e8f0;font-size:13px;line-height:1.8;white-space:pre-wrap;min-height:180px;width:100%;box-sizing:border-box;resize:vertical;font-family:inherit;" placeholder="Draft will appear here..."></textarea>
+      <button class="copy-btn" style="margin-top:8px;" onclick="copyRecapDraft()">Copy Draft</button>
+    </div>
+    <div class="recap-lists">
+      <div class="recap-list-col">
+        <div class="recap-list-title">💣 List 1 — HR Threats</div>
+        <div class="recap-log-row">
+          <input type="date" class="recap-date-input" id="recap-date-1"/>
+          <select class="recap-score-select" id="recap-score-1">
+            <option value="5/5">5/5 🔥</option>
+            <option value="4/5">4/5 🔥</option>
+            <option value="3/5">3/5 ✅</option>
+            <option value="2/5">2/5</option>
+            <option value="1/5">1/5</option>
+            <option value="0/5">0/5</option>
+            <option disabled>── 4 players ──</option>
+            <option value="4/4">4/4 🔥</option>
+            <option value="3/4">3/4 ✅</option>
+            <option value="2/4">2/4</option>
+            <option value="1/4">1/4</option>
+            <option value="0/4">0/4</option>
+            <option disabled>── 3 players ──</option>
+            <option value="3/3">3/3 🔥</option>
+            <option value="2/3">2/3 ✅</option>
+            <option value="1/3">1/3</option>
+          </select>
+          <button class="recap-add-btn" onclick="recapAdd(1)">+ Log</button>
+        </div>
+        <div class="recap-streak-bar" id="recap-bar-1"></div>
+        <div class="recap-entries" id="recap-entries-1"><div class="recap-empty">No entries yet.</div></div>
+      </div>
+      <div class="recap-list-col">
+        <div class="recap-list-title">🚫 List 2 — NRFI</div>
+        <div class="recap-log-row">
+          <input type="date" class="recap-date-input" id="recap-date-2"/>
+          <select class="recap-score-select" id="recap-score-2">
+            <option value="4/4">4/4 🔥</option>
+            <option value="3/4">3/4 ✅</option>
+            <option value="2/4">2/4</option>
+            <option value="1/4">1/4</option>
+            <option value="0/4">0/4</option>
+            <option disabled>── 3 matchups ──</option>
+            <option value="3/3">3/3 🔥</option>
+            <option value="2/3">2/3 ✅</option>
+            <option value="1/3">1/3</option>
+            <option disabled>── 2 matchups ──</option>
+            <option value="2/2">2/2 🔥</option>
+            <option value="1/2">1/2</option>
+          </select>
+          <button class="recap-add-btn" onclick="recapAdd(2)">+ Log</button>
+        </div>
+        <div class="recap-streak-bar" id="recap-bar-2"></div>
+        <div class="recap-entries" id="recap-entries-2"><div class="recap-empty">No entries yet.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMENT BANK TAB -->
+<div id="view-comments" class="view">
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    <div style="font-size:16px;font-weight:700;color:#f1f5f9;">💬 Comment Bank</div>
+    <div id="comment-bank-list"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <input class="field-input" id="new-comment-label" placeholder="Label" style="width:180px;"/>
+      <textarea class="field-textarea" id="new-comment-text" placeholder="Comment text..." rows="2" style="flex:1;min-width:200px;"></textarea>
+      <button class="recap-add-btn" onclick="addComment()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY CHECKLIST TAB -->
+<div id="view-schedule" class="view">
+  <div style="font-size:16px;font-weight:700;color:#f1f5f9;margin-bottom:16px;">✅ Daily Checklist</div>
+  <div style="color:#64748b;font-size:13px;padding:20px 0;">📋 Schedule coming soon — add tasks manually or paste from your doc.</div>
+</div>
+
+<!-- Recap popup -->
+<div class="recap-popup-overlay" id="recap-popup-overlay" style="display:none;" onclick="closeRecapPopup(event)">
+  <div class="recap-popup" id="recap-popup">
+    <div class="recap-popup-title">
+      <span id="recap-popup-title-text"></span>
+      <button class="recap-popup-close" onclick="closeRecapPopup()">✕</button>
+    </div>
+    <div id="recap-popup-body"></div>
+  </div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────
+var SCRIPTS = {
+  "Welcome": [{ label: "Add your first script", text: "Use the ➕ Add Script button above to add your MLB scripts." }]
+};
+
+var listPlayers = {
+  1: [
+    { name: "Kyle Schwarber", opp: "vs TEX", stars: "4⭐️", status: "pending" },
+    { name: "Michael Busch",  opp: "vs WSH", stars: "5⭐️", status: "pending" },
+    { name: "Cal Raleigh",    opp: "vs CLE", stars: "5⭐️", status: "pending" },
+    { name: "Pete Alonso",    opp: "vs MIN", stars: "4⭐️", status: "pending" },
+    { name: "Eugenio Suarez", opp: "vs BOS", stars: "5⭐️", status: "pending" }
+  ],
+  2: [
+    { team1: "CLE", team2: "SEA", status: "pending" },
+    { team1: "TEX", team2: "NYM", status: "pending" },
+    { team1: "PIT", team2: "NYM", status: "pending" },
+    { team1: "BOS", team2: "CIN", status: "pending" }
+  ]
+};
+
+var playerHistory = { 1: {}, 2: {} };
+var recapData = { 1: [], 2: [] };
+var commentBank = [
+  { label: "50% OFF — Prof", text: "🚨Celebrating with 50% off 👇\nhttps://naz.cash/Join" },
+  { label: "Free Discord", text: "👇Join my FREE Discord 📊\nhttps://naz.cash/Discord" },
+  { label: "3-Day Trial", text: "3 DAY FREE TRIAL 👇\nhttps://dubclub.win/utm/cam-6t3v6" },
+  { label: "HIT 💚", text: "HIT 💚 Tap if you tailed" }
+];
+var editingCommentIndex = null;
+var clearListBackup = { 1: null, 2: null };
+var clearUndoTimer = { 1: null, 2: null };
+var historyBackup = null;
+var historyUndoTimer = null;
+var activeScriptKey = "Welcome";
+var editingScriptKey = null;
+var editingScriptIndex = null;
+
+// ── Init ──────────────────────────────────────────────────────
+window.onload = function() {
+  document.getElementById("date-badge").textContent = "⚾ " + new Date().toLocaleDateString("en-US", {month:"numeric", day:"numeric", year:"numeric"});
+  var now = new Date();
+  var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var day = now.getDate();
+  var suffix = day===1||day===21||day===31?"st":day===2||day===22?"nd":day===3||day===23?"rd":"th";
+  document.getElementById("l1-date").value = months[now.getMonth()] + " " + day + suffix;
+  document.getElementById("l2-date").value = (now.getMonth()+1) + "/" + day;
+  var yyyy = now.getFullYear(), mm = String(now.getMonth()+1).padStart(2,'0'), dd = String(now.getDate()).padStart(2,'0');
+  document.getElementById("recap-date-1").value = yyyy+"-"+mm+"-"+dd;
+  document.getElementById("recap-date-2").value = yyyy+"-"+mm+"-"+dd;
+  loadAllState();
+  buildPlayerRows(1); buildPlayerRows(2);
+  updatePlayerLists();
+  buildScriptsSidebar(); renderScripts(activeScriptKey);
+  renderCommentBank();
+  checkBackupReminder();
+};
+
+function switchTab(id) {
+  document.querySelectorAll(".view").forEach(function(v){ v.classList.remove("active"); });
+  document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+  document.getElementById("view-"+id).classList.add("active");
+  document.getElementById("tab-"+id).classList.add("active");
+  if(id === "players") { updatePlayerLists(); updatePlayerWarnings(); }
+  if(id === "history") { renderHistory(); }
+  if(id === "rankings") { renderBestWorst(); }
+  if(id === "recap") { renderRecap(1); renderRecap(2); }
+  if(id === "comments") { renderCommentBank(); }
+}
+
+// ── Player Lists ──────────────────────────────────────────────
+function buildPlayerRows(list) {
+  var container = document.getElementById("l"+list+"-players");
+  container.innerHTML = "";
+  listPlayers[list].forEach(function(p, i) {
+    var row = document.createElement("div");
+    row.className = "player-row " + p.status;
+
+    if(list === 1) {
+      var nameIn = document.createElement("input");
+      nameIn.className = "pi name"; nameIn.placeholder = "Player name"; nameIn.value = p.name || "";
+      nameIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].name = this.value; updatePlayerLists(); }; })(list,i);
+
+      var oppIn = document.createElement("input");
+      oppIn.className = "pi opp"; oppIn.placeholder = "vs OPP"; oppIn.value = p.opp || "";
+      oppIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].opp = this.value; updatePlayerLists(); }; })(list,i);
+
+      var starsIn = document.createElement("input");
+      starsIn.className = "pi stars"; starsIn.placeholder = "5⭐️"; starsIn.value = p.stars || "";
+      starsIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].stars = this.value; updatePlayerLists(); }; })(list,i);
+
+      row.appendChild(nameIn); row.appendChild(oppIn); row.appendChild(starsIn);
+    } else {
+      var t1 = document.createElement("input");
+      t1.className = "pi team1"; t1.placeholder = "TEAM1"; t1.value = p.team1 || "";
+      t1.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].team1 = this.value; updatePlayerLists(); }; })(list,i);
+
+      var sep = document.createElement("span");
+      sep.textContent = "/"; sep.style.cssText = "color:#64748b;font-size:14px;font-weight:700;";
+
+      var t2 = document.createElement("input");
+      t2.className = "pi team2"; t2.placeholder = "TEAM2"; t2.value = p.team2 || "";
+      t2.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].team2 = this.value; updatePlayerLists(); }; })(list,i);
+
+      row.appendChild(t1); row.appendChild(sep); row.appendChild(t2);
+    }
+
+    var statusBtn = document.createElement("button");
+    statusBtn.className = "pstatus-btn " + p.status;
+    statusBtn.textContent = p.status==="hit"?"✅ Hit":p.status==="miss"?"❌ Miss":p.status==="dnp"?"🚫 DNP":"⏳";
+    statusBtn.onclick = (function(lst,idx,btn,row){ return function(){
+      var s = listPlayers[lst][idx].status;
+      var next = s==="pending"?"hit":s==="hit"?"miss":s==="miss"?"dnp":"pending";
+      listPlayers[lst][idx].status = next;
+      btn.className = "pstatus-btn "+next;
+      btn.textContent = next==="hit"?"✅ Hit":next==="miss"?"❌ Miss":next==="dnp"?"🚫 DNP":"⏳";
+      row.className = "player-row "+next;
+      updatePlayerLists();
+    }; })(list,i,statusBtn,row);
+
+    var remBtn = document.createElement("button");
+    remBtn.className = "premove"; remBtn.textContent = "✕";
+    remBtn.onclick = (function(lst,idx){ return function(){ listPlayers[lst].splice(idx,1); buildPlayerRows(lst); updatePlayerLists(); }; })(list,i);
+
+    row.appendChild(statusBtn); row.appendChild(remBtn);
+    container.appendChild(row);
+  });
+}
+
+function addPlayer(list) {
+  if(list === 1) listPlayers[1].push({ name:"", opp:"", stars:"5⭐️", status:"pending" });
+  else listPlayers[2].push({ team1:"", team2:"", status:"pending" });
+  buildPlayerRows(list); updatePlayerLists();
+}
+
+function buildList1Text() {
+  var date = document.getElementById("l1-date").value;
+  var active = listPlayers[1].filter(function(p){ return p.status !== "dnp"; });
+  var dnp = listPlayers[1].filter(function(p){ return p.status === "dnp"; });
+  var nonMiss = active.filter(function(p){ return p.status !== "miss"; });
+  var misses = active.filter(function(p){ return p.status === "miss"; });
+  var sorted = nonMiss.concat(misses);
+  var lines = sorted.map(function(p) {
+    var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
+    return p.name + "  {" + p.stars + "} " + p.opp + hitMark;
+  }).join("\n");
+  var text = "Players That Are Going Yard Today:\n" + date + " HR Threats List💣⚾\n\n" + lines;
+  if(dnp.length > 0) text += "\n\nDNP 🩹\n" + dnp.map(function(p){ return p.name; }).join("\n");
+  return text;
+}
+
+function buildList2Text() {
+  var date = document.getElementById("l2-date").value;
+  var active = listPlayers[2].filter(function(p){ return p.status !== "dnp"; });
+  var dnp = listPlayers[2].filter(function(p){ return p.status === "dnp"; });
+  var nonMiss = active.filter(function(p){ return p.status !== "miss"; });
+  var misses = active.filter(function(p){ return p.status === "miss"; });
+  var sorted = nonMiss.concat(misses);
+  var lines = sorted.map(function(p) {
+    var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
+    return p.team1 + " / " + p.team2 + hitMark;
+  }).join("\n");
+  var text = "Teams that will NOT score in the 1st Inning…\n" + date + " Best NRFIs 🚫:\n\n" + lines;
+  text += "\n\nOne inning. No damage. \nThat's the mission🔒⚾️";
+  if(dnp.length > 0) text += "\n\n🩹 DNP\n" + dnp.map(function(p){ return p.team1+"/"+p.team2; }).join("\n");
+  return text;
+}
+
+function updatePlayerLists() {
+  document.getElementById("l1-preview").textContent = buildList1Text();
+  document.getElementById("l2-preview").textContent = buildList2Text();
+  var h1=listPlayers[1].filter(function(p){return p.status==="hit";}).length;
+  var m1=listPlayers[1].filter(function(p){return p.status==="miss";}).length;
+  var d1=listPlayers[1].filter(function(p){return p.status==="dnp";}).length;
+  var h2=listPlayers[2].filter(function(p){return p.status==="hit";}).length;
+  var m2=listPlayers[2].filter(function(p){return p.status==="miss";}).length;
+  var d2=listPlayers[2].filter(function(p){return p.status==="dnp";}).length;
+  document.getElementById("l1-subtitle").textContent = h1+" hit · "+m1+" miss · "+d1+" dnp · "+(listPlayers[1].length-h1-m1-d1)+" pending";
+  document.getElementById("l2-subtitle").textContent = h2+" hit · "+m2+" miss · "+d2+" dnp · "+(listPlayers[2].length-h2-m2-d2)+" pending";
+  savePlayerState();
+}
+
+function copyList(list) {
+  var btn = document.getElementById("l"+list+"-copy-btn");
+  copyToClipboard(list===1?buildList1Text():buildList2Text(), btn);
+}
+
+function clearList(list) {
+  if(!confirm("Clear List "+list+"? This cannot be undone immediately.")) return;
+  clearListBackup[list] = JSON.parse(JSON.stringify(listPlayers[list]));
+  listPlayers[list].forEach(function(p){
+    if(list===1){p.name="";p.opp="";p.status="pending";}
+    else{p.team1="";p.team2="";p.status="pending";}
+  });
+  buildPlayerRows(list); updatePlayerLists();
+  var bar = document.getElementById("undo-bar-"+list);
+  var timerEl = document.getElementById("undo-timer-"+list);
+  bar.classList.add("show");
+  var secondsLeft = 60;
+  timerEl.textContent = secondsLeft+"s";
+  if(clearUndoTimer[list]) clearInterval(clearUndoTimer[list]);
+  clearUndoTimer[list] = setInterval(function(){
+    secondsLeft--;
+    timerEl.textContent = secondsLeft+"s";
+    if(secondsLeft<=0){ clearInterval(clearUndoTimer[list]); bar.classList.remove("show"); clearListBackup[list]=null; }
+  },1000);
+}
+
+function undoClear(list) {
+  if(!clearListBackup[list]) return;
+  listPlayers[list] = clearListBackup[list]; clearListBackup[list]=null;
+  clearInterval(clearUndoTimer[list]);
+  document.getElementById("undo-bar-"+list).classList.remove("show");
+  buildPlayerRows(list); updatePlayerLists();
+}
+
+// ── Player Warnings ───────────────────────────────────────────
+function getPlayerWarning(name, list) {
+  var entries = playerHistory[list]&&playerHistory[list][name];
+  if(!entries||entries.length<3) return null;
+  var last3 = entries.slice(-3);
+  if(last3.every(function(e){return e.result==="miss";})) return "⚠️ 3 misses in a row";
+  return null;
+}
+
+function updatePlayerWarnings() {
+  [1,2].forEach(function(list){
+    listPlayers[list].forEach(function(p,i){
+      var key = list===1?p.name:(p.team1+"/"+p.team2);
+      var warning = getPlayerWarning(key, list);
+      var rowEl = document.querySelectorAll("#l"+list+"-players .player-row")[i];
+      if(!rowEl) return;
+      var ex = rowEl.querySelector(".player-warning");
+      if(ex) ex.remove();
+      if(warning&&key){
+        var inp = rowEl.querySelector(list===1?".pi.name":".pi.team1");
+        if(inp){ var span=document.createElement("span"); span.className="player-warning"; span.textContent=warning; inp.insertAdjacentElement("afterend",span); }
+      }
+    });
+  });
+}
+
+// ── History ───────────────────────────────────────────────────
+function logToday() {
+  var now = new Date();
+  var dateStr = (now.getMonth()+1)+"/"+now.getDate()+"/"+String(now.getFullYear()).slice(2);
+  [1,2].forEach(function(list){
+    listPlayers[list].forEach(function(p){
+      var key = list===1?p.name:(p.team1+"/"+p.team2);
+      if(!key.trim()||p.status==="pending"||p.status==="dnp") return;
+      if(!playerHistory[list][key]) playerHistory[list][key]=[];
+      var already = playerHistory[list][key].some(function(e){return e.date===dateStr;});
+      if(!already) playerHistory[list][key].push({date:dateStr, stat:list===1?p.opp:"", result:p.status});
+    });
+  });
+  renderHistory(); renderBestWorst(); saveHistoryState(); updatePlayerWarnings();
+  var btn = document.querySelector(".history-log-btn");
+  var orig = btn.textContent; btn.textContent="✓ Logged!"; btn.style.background="#166534";
+  setTimeout(function(){btn.textContent=orig;btn.style.background="";},2000);
+}
+
+function getStreak(entries) {
+  if(!entries||entries.length===0) return null;
+  var last=entries[entries.length-1].result, count=0;
+  for(var i=entries.length-1;i>=0;i--){ if(entries[i].result===last) count++; else break; }
+  return {type:last,count:count};
+}
+
+function renderHistory() {
+  [1,2].forEach(function(list){
+    var container=document.getElementById("history-table-"+list);
+    var players=Object.keys(playerHistory[list]);
+    if(players.length===0){container.innerHTML="<div class='history-empty'>No history yet.</div>";return;}
+    var allDates=[];
+    players.forEach(function(name){playerHistory[list][name].forEach(function(e){if(allDates.indexOf(e.date)===-1)allDates.push(e.date);});});
+    allDates.sort(function(a,b){return new Date(a)-new Date(b);});
+    var html="<table class='history-table'><thead><tr><th>Player/Matchup</th><th>Streak</th>";
+    allDates.forEach(function(d){html+="<th>"+d+"</th>";});
+    html+="</tr></thead><tbody>";
+    players.forEach(function(name){
+      var entries=playerHistory[list][name];
+      var streak=getStreak(entries);
+      var streakHtml="<span class='streak-badge streak-none'>—</span>";
+      if(streak){var cls=streak.type==="hit"?"streak-hit":"streak-miss";var icon=streak.type==="hit"?"🟢":"🔴";streakHtml="<span class='streak-badge "+cls+"'>"+icon+" "+streak.count+" in a row</span>";}
+      html+="<tr><td class='player-col'>"+name+"</td><td>"+streakHtml+"</td>";
+      allDates.forEach(function(d){
+        var entry=entries.find(function(e){return e.date===d;});
+        if(entry){var icon=entry.result==="hit"?"✅":"❌";var cls=entry.result==="hit"?"hit":"miss";html+="<td><span class='result-dot "+cls+"'>"+icon+"</span></td>";}
+        else html+="<td><span class='result-dot pending'>·</span></td>";
+      });
+      html+="</tr>";
+    });
+    html+="</tbody></table>";
+    container.innerHTML=html;
+  });
+}
+
+function clearHistory() {
+  if(!confirm("Clear all history? This cannot be undone immediately.")) return;
+  historyBackup=JSON.parse(JSON.stringify(playerHistory));
+  playerHistory={1:{},2:{}}; renderHistory(); saveHistoryState();
+  var bar=document.getElementById("undo-bar-history");
+  var timerEl=document.getElementById("undo-timer-history");
+  bar.classList.add("show");
+  var secondsLeft=60; timerEl.textContent=secondsLeft+"s";
+  if(historyUndoTimer) clearInterval(historyUndoTimer);
+  historyUndoTimer=setInterval(function(){
+    secondsLeft--; timerEl.textContent=secondsLeft+"s";
+    if(secondsLeft<=0){clearInterval(historyUndoTimer);bar.classList.remove("show");historyBackup=null;}
+  },1000);
+}
+
+function undoClearHistory() {
+  if(!historyBackup) return;
+  playerHistory=historyBackup; historyBackup=null;
+  clearInterval(historyUndoTimer);
+  document.getElementById("undo-bar-history").classList.remove("show");
+  renderHistory(); renderBestWorst(); saveHistoryState();
+}
+
+// ── Best/Worst ────────────────────────────────────────────────
+function renderBestWorst() {
+  [1,2].forEach(function(list){
+    var container=document.getElementById("bw-table-"+list);
+    var players=Object.keys(playerHistory[list]);
+    if(players.length===0){container.innerHTML="<div class='bw-empty'>No history logged yet.</div>";return;}
+    var stats=players.map(function(name){
+      var entries=playerHistory[list][name];
+      var hits=entries.filter(function(e){return e.result==="hit";}).length;
+      var rate=entries.length>0?hits/entries.length:0;
+      var streak=getStreak(entries);
+      return{name:name,hits:hits,total:entries.length,rate:rate,streak:streak};
+    });
+    stats.sort(function(a,b){return b.rate-a.rate||b.total-a.total;});
+    var html="<table class='bw-table'><thead><tr><th>#</th><th>Player</th><th>Hit Rate</th><th>Record</th><th>Streak</th></tr></thead><tbody>";
+    stats.forEach(function(s,i){
+      var pct=Math.round(s.rate*100);
+      var rateClass=pct>=70?"bw-hot":pct>=40?"bw-mid":"bw-cold";
+      var barColor=pct>=70?"#22c55e":pct>=40?"#94a3b8":"#ef4444";
+      var rankLabel=i===0?" <span class='bw-label bw-label-hot'>🔥 Best</span>":i===stats.length-1&&stats.length>1?" <span class='bw-label bw-label-cold'>❄️ Avoid</span>":"";
+      var streakTxt=s.streak?(s.streak.type==="hit"?"🟢 ":"🔴 ")+s.streak.count+" in a row":"—";
+      html+="<tr><td style='color:#475569'>"+(i+1)+"</td><td style='font-weight:600'>"+s.name+rankLabel+"</td>"
+        +"<td><span class='bw-rate "+rateClass+"'>"+pct+"%</span> <span class='bw-bar-wrap'><span class='bw-bar-fill' style='width:"+pct+"%;background:"+barColor+"'></span></span></td>"
+        +"<td style='color:#94a3b8'>"+s.hits+"/"+s.total+"</td>"
+        +"<td style='font-size:12px;color:#94a3b8'>"+streakTxt+"</td></tr>";
+    });
+    html+="</tbody></table>";
+    container.innerHTML=html;
+  });
+}
+
+// ── Recap Monitor ─────────────────────────────────────────────
+function isGoodDay(score) {
+  var parts=score.split("/"); var h=parseInt(parts[0]); var t=parseInt(parts[1]);
+  if(isNaN(h)||isNaN(t)||t===0) return false;
+  return (h/t)>=0.75;
+}
+
+function recapAdd(list) {
+  var dateVal=document.getElementById("recap-date-"+list).value;
+  var score=document.getElementById("recap-score-"+list).value;
+  if(!dateVal){alert("Please select a date.");return;}
+  var exists=recapData[list].some(function(e){return e.date===dateVal;});
+  if(exists){if(!confirm("Replace existing entry for this date?"))return;recapData[list]=recapData[list].filter(function(e){return e.date!==dateVal;});}
+  recapData[list].push({date:dateVal,score:score});
+  recapData[list].sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  renderRecap(list); saveRecapState();
+}
+
+function recapDeleteThis(btn){var list=parseInt(btn.getAttribute("data-list"));var date=btn.getAttribute("data-date");recapData[list]=recapData[list].filter(function(e){return e.date!==date;});renderRecap(list);saveRecapState();}
+
+function checkRecapAlert(list){
+  var last5=recapData[list].slice(-5);
+  var good=last5.filter(function(e){return isGoodDay(e.score);}).length;
+  var alertEl=document.getElementById("recap-alert-"+list);
+  if(last5.length>=3&&good>=3){alertEl.classList.remove("hidden");document.getElementById("recap-draft-wrap").classList.remove("hidden");}
+  else alertEl.classList.add("hidden");
+}
+
+function renderRecap(list){
+  var entries=recapData[list];
+  var barEl=document.getElementById("recap-bar-"+list);
+  var container=document.getElementById("recap-entries-"+list);
+  barEl.innerHTML=entries.slice(-10).map(function(e){
+    var sp=e.score.split("/");var sh=parseInt(sp[0]);var st=parseInt(sp[1]);var pct=st>0?sh/st:0;
+    var bg=(sh===st)?"#f97316":pct>=0.75?"#22c55e":"#334155";
+    var label=(sh===st)?"🔥":pct>=0.75?"✅":sp[0];
+    return "<div class='recap-streak-dot' style='background:"+bg+"' title='"+e.date+"'>"+label+"</div>";
+  }).join("");
+  if(entries.length===0){container.innerHTML="<div class='recap-empty'>No entries yet.</div>";checkRecapAlert(list);return;}
+  var html="";
+  entries.slice().reverse().forEach(function(e){
+    var parts=e.score.split("/");var h=parseInt(parts[0]);var t=parseInt(parts[1]);var pct=t>0?h/t:0;
+    var badgeClass=(h===t)?"score-44":pct>=0.75?"score-34":pct>=0.4?"score-24":"score-14";
+    var label=(h===t)?e.score+" 🔥":pct>=0.75?e.score+" ✅":e.score;
+    var d=new Date(e.date+"T00:00:00");
+    var dateLabel=d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    html+="<div class='recap-entry'><div class='recap-entry-left'><span class='recap-score-badge "+badgeClass+"'>"+label+"</span><span class='recap-entry-date'>"+dateLabel+"</span></div>"
+      +"<div style='display:flex;gap:6px;'><button class='recap-view-btn' data-list='"+list+"' data-date='"+e.date+"' onclick='showRecapPlayers(this)'>👁</button>"
+      +"<button class='recap-del-btn' data-list='"+list+"' data-date='"+e.date+"' onclick='recapDeleteThis(this)'>✕</button></div></div>";
+  });
+  container.innerHTML=html;
+  checkRecapAlert(list);
+}
+
+function showRecapPlayers(btn){
+  var list=parseInt(btn.getAttribute("data-list"));var date=btn.getAttribute("data-date");
+  var d=new Date(date+"T00:00:00");var dateLabel=d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+  var listName=list===1?"💣 HR Threats":"🚫 NRFI";
+  var players=playerHistory[list];var found=[];
+  Object.keys(players).forEach(function(name){var entry=players[name].find(function(e){return e.date===date;});if(entry)found.push({name:name,result:entry.result});});
+  found.sort(function(a,b){return a.result==="hit"?-1:1;});
+  document.getElementById("recap-popup-title-text").textContent=listName+" — "+dateLabel;
+  var body="";
+  if(found.length===0) body="<div class='recap-popup-empty'>No player history logged for this date.</div>";
+  else found.forEach(function(p){var icon=p.result==="hit"?"✅":"❌";body+="<div class='recap-popup-player'><span style='font-size:16px'>"+icon+"</span><div style='font-weight:600'>"+p.name+"</div></div>";});
+  document.getElementById("recap-popup-body").innerHTML=body;
+  document.getElementById("recap-popup-overlay").style.display="flex";
+}
+
+function closeRecapPopup(e){if(!e||e.target===document.getElementById("recap-popup-overlay"))document.getElementById("recap-popup-overlay").style.display="none";}
+
+function generateRecapDraft(list){
+  var listName=list===1?"HR Threats 💣":"NRFI 🚫";
+  var last5dates=recapData[list].slice(-5).map(function(e){return e.date;});
+  var histPlayers=playerHistory[list]||{};
+  var allEntries=[];
+  Object.keys(histPlayers).forEach(function(name){histPlayers[name].forEach(function(e){if(last5dates.indexOf(e.date)!==-1)allEntries.push({name:name,result:e.result,date:e.date});});});
+  allEntries.sort(function(a,b){return a.result===b.result?new Date(a.date)-new Date(b.date):a.result==="hit"?-1:1;});
+  var seen={};var deduped=[];
+  allEntries.forEach(function(e){if(!seen[e.name]){seen[e.name]=true;deduped.push(e);}});
+  var nl="\n";
+  var totalHits=0,totalMisses=0;
+  recapData[list].slice(-5).forEach(function(e){var p=e.score.split("/");totalHits+=parseInt(p[0]);totalMisses+=(parseInt(p[1])-parseInt(p[0]));});
+  var record=totalHits+"-"+totalMisses;
+  var lines=deduped.map(function(e){return e.name+(e.result==="hit"?" ✅":" ❌");}).join(nl);
+  var draft="🚨 FREE 3 DAY TRIAL HERE ➡️  https://naz.cash/trial3DC"+nl+nl
+    +"📣 WE'RE "+record+" IN THE L5 DAYS!!! GREEN BEEN COMING EAAAAASY✅✅✅"+nl+nl
+    +(lines||"(No player history found — log results in History tab first)")+nl+"@everyone";
+  var el=document.getElementById("recap-draft-text");
+  el.value=draft;
+  document.getElementById("recap-draft-wrap").classList.remove("hidden");
+}
+
+function copyRecapDraft(){var el=document.getElementById("recap-draft-text");var text=el.value!==undefined?el.value:el.textContent;var btn=document.querySelector("[onclick='copyRecapDraft()']");copyToClipboard(text,btn);}
+
+// ── Scripts ───────────────────────────────────────────────────
+function buildScriptsSidebar(){
+  var sb=document.getElementById("scripts-sidebar");sb.innerHTML="";
+  Object.keys(SCRIPTS).forEach(function(k){
+    var btn=document.createElement("button");
+    btn.className="snav-btn"+(k===activeScriptKey?" active":"");
+    btn.textContent=k;btn.setAttribute("data-key",k);
+    btn.onclick=(function(key){return function(){activeScriptKey=key;buildScriptsSidebar();renderScripts(key);};})(k);
+    sb.appendChild(btn);
+  });
+}
+
+function renderScripts(k){
+  var sc=document.getElementById("scripts-content");sc.innerHTML="";
+  (SCRIPTS[k]||[]).forEach(function(s,i){
+    var card=document.createElement("div");card.className="script-card";
+    if(editingScriptKey===k&&editingScriptIndex===i){
+      card.style.border="1.5px solid #16a34a";
+      var lIn=document.createElement("input");lIn.className="field-input";lIn.value=s.label;lIn.style.marginBottom="8px";lIn.id="edit-script-label";
+      var tIn=document.createElement("textarea");tIn.className="field-textarea";tIn.value=s.text;tIn.rows=6;tIn.id="edit-script-text";
+      var br=document.createElement("div");br.style.cssText="display:flex;gap:8px;margin-top:8px;";
+      var sv=document.createElement("button");sv.className="recap-add-btn";sv.textContent="💾 Save";sv.onclick=(function(key,idx){return function(){saveScriptEdit(key,idx);};})(k,i);
+      var cv=document.createElement("button");cv.className="history-clear-btn";cv.style.cssText="padding:6px 14px;font-size:13px;";cv.textContent="Cancel";cv.onclick=function(){editingScriptKey=null;editingScriptIndex=null;renderScripts(k);};
+      br.appendChild(sv);br.appendChild(cv);card.appendChild(lIn);card.appendChild(tIn);card.appendChild(br);
+    } else {
+      var header=document.createElement("div");header.className="script-card-header";
+      var lbl=document.createElement("span");lbl.className="script-label";lbl.textContent=s.label;
+      var bw=document.createElement("div");bw.style.cssText="display:flex;gap:4px;align-items:center;";
+      var dh=document.createElement("span");dh.className="script-drag-handle";dh.textContent="⠿";dh.title="Drag to reorder";
+      var cb=document.createElement("button");cb.className="copy-btn";cb.textContent="Copy";cb.onclick=(function(t,b){return function(){copyToClipboard(t,b);};})(s.text,cb);
+      var eb=document.createElement("button");eb.className="script-edit-btn";eb.textContent="✏️";eb.onclick=(function(key,idx){return function(){editingScriptKey=key;editingScriptIndex=idx;renderScripts(key);};})(k,i);
+      var db=document.createElement("button");db.className="script-del-btn";db.textContent="✕";
+      db.onclick=(function(key,idx){return function(){if(!confirm("Delete this script?"))return;SCRIPTS[key].splice(idx,1);if(SCRIPTS[key].length===0)delete SCRIPTS[key];saveScriptsState();buildScriptsSidebar();activeScriptKey=Object.keys(SCRIPTS)[0]||"";if(activeScriptKey)renderScripts(activeScriptKey);else{sc.innerHTML=""};};})(k,i);
+      bw.appendChild(dh);bw.appendChild(cb);bw.appendChild(eb);bw.appendChild(db);
+      header.appendChild(lbl);header.appendChild(bw);
+      var pre=document.createElement("pre");pre.className="script-text";pre.textContent=s.text;
+      card.appendChild(header);card.appendChild(pre);
+      card.draggable=true;card.dataset.index=i;card.dataset.key=k;
+      card.addEventListener("dragstart",function(e){e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",i);setTimeout(function(){card.classList.add("dragging");},0);});
+      card.addEventListener("dragend",function(){card.classList.remove("dragging");document.querySelectorAll(".script-card").forEach(function(c){c.classList.remove("drag-over");});});
+      card.addEventListener("dragover",function(e){e.preventDefault();document.querySelectorAll(".script-card").forEach(function(c){c.classList.remove("drag-over");});card.classList.add("drag-over");});
+      card.addEventListener("drop",function(e){e.preventDefault();var fromIdx=parseInt(e.dataTransfer.getData("text/plain"));var toIdx=parseInt(card.dataset.index);if(fromIdx===toIdx)return;var arr=SCRIPTS[k];var moved=arr.splice(fromIdx,1)[0];arr.splice(toIdx,0,moved);saveScriptsState();renderScripts(k);});
+    }
+    sc.appendChild(card);
+  });
+}
+
+function saveScriptEdit(key,idx){
+  var nl=document.getElementById("edit-script-label").value.trim();
+  var nt=document.getElementById("edit-script-text").value.trim();
+  if(!nl||!nt){alert("Label and text cannot be empty.");return;}
+  SCRIPTS[key][idx].label=nl;SCRIPTS[key][idx].text=nt;
+  editingScriptKey=null;editingScriptIndex=null;saveScriptsState();renderScripts(key);
+}
+
+function toggleAddScriptForm(){var f=document.getElementById("script-add-form");f.style.display=f.style.display==="none"?"flex":"none";}
+
+function addNewScript(){
+  var sec=document.getElementById("new-script-section").value.trim();
+  var lbl=document.getElementById("new-script-label").value.trim();
+  var txt=document.getElementById("new-script-text").value.trim();
+  if(!sec||!lbl||!txt){alert("Please fill in all fields.");return;}
+  if(!SCRIPTS[sec])SCRIPTS[sec]=[];
+  SCRIPTS[sec].push({label:lbl,text:txt});
+  document.getElementById("new-script-section").value="";
+  document.getElementById("new-script-label").value="";
+  document.getElementById("new-script-text").value="";
+  toggleAddScriptForm();saveScriptsState();activeScriptKey=sec;buildScriptsSidebar();renderScripts(sec);
+}
+
+function filterScripts(query){
+  var q=query.trim().toLowerCase();
+  var sb=document.getElementById("scripts-sidebar");
+  var btns=sb.querySelectorAll(".snav-btn");
+  var anyVisible=false;
+  btns.forEach(function(btn){var key=btn.getAttribute("data-key")||"";var match=!q||key.toLowerCase().includes(q);btn.style.display=match?"":"none";if(match)anyVisible=true;});
+}
+
+function saveScriptsState(){try{localStorage.setItem("mlb_scripts",JSON.stringify(SCRIPTS));}catch(e){}}
+function loadScriptsState(){try{var s=localStorage.getItem("mlb_scripts");if(s){var p=JSON.parse(s);Object.keys(p).forEach(function(k){SCRIPTS[k]=p[k];});}}catch(e){}}
+
+// ── Comment Bank ──────────────────────────────────────────────
+function saveCommentBank(){try{localStorage.setItem("mlb_commentBank",JSON.stringify(commentBank));}catch(e){}}
+function loadCommentBank(){try{var s=localStorage.getItem("mlb_commentBank");if(s)commentBank=JSON.parse(s);}catch(e){}}
+
+function renderCommentBank(){
+  var container=document.getElementById("comment-bank-list");if(!container)return;
+  if(commentBank.length===0){container.innerHTML="<div style='color:#475569;font-size:13px;'>No comments yet.</div>";return;}
+  var html="<div style='display:flex;flex-direction:column;gap:10px;'>";
+  commentBank.forEach(function(c,i){
+    var isEditing=(editingCommentIndex===i);
+    if(isEditing){
+      html+="<div style='background:#1e293b;border:1.5px solid #16a34a;border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;'>"
+        +"<input id='edit-comment-label-"+i+"' class='field-input' value='"+c.label.replace(/"/g,'&quot;')+"' style='margin-bottom:6px;'/>"
+        +"<textarea id='edit-comment-text-"+i+"' class='field-textarea' rows='3' style='margin-bottom:6px;'>"+c.text+"</textarea>"
+        +"<div style='display:flex;gap:6px;'><button class='recap-add-btn' onclick='saveEditComment("+i+")'>💾 Save</button>"
+        +"<button class='history-clear-btn' style='padding:5px 12px;font-size:12px;' onclick='cancelEditComment()'>Cancel</button></div></div>";
+    } else {
+      html+="<div style='background:#1e293b;border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;'>"
+        +"<div style='flex:1;'><div style='font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:4px;'>"+c.label+"</div>"
+        +"<pre style='color:#e2e8f0;font-size:13px;margin:0;white-space:pre-wrap;font-family:inherit;'>"+c.text+"</pre></div>"
+        +"<div style='display:flex;gap:6px;flex-shrink:0;'>"
+        +"<button class='copy-btn' onclick='copyComment("+i+")'>Copy</button>"
+        +"<button class='copy-btn' style='background:#1e293b;border:1.5px solid #16a34a;color:#86efac;' onclick='startEditComment("+i+")'>✏️</button>"
+        +"<button class='recap-del-btn' onclick='deleteComment("+i+")'>✕</button></div></div>";
+    }
+  });
+  html+="</div>";container.innerHTML=html;
+}
+
+function startEditComment(i){editingCommentIndex=i;renderCommentBank();}
+function cancelEditComment(){editingCommentIndex=null;renderCommentBank();}
+function saveEditComment(i){
+  var nl=document.getElementById("edit-comment-label-"+i).value.trim();
+  var nt=document.getElementById("edit-comment-text-"+i).value.trim();
+  if(!nl||!nt){alert("Cannot be empty.");return;}
+  commentBank[i].label=nl;commentBank[i].text=nt;editingCommentIndex=null;renderCommentBank();saveCommentBank();
+}
+function addComment(){
+  var l=document.getElementById("new-comment-label").value.trim();
+  var t=document.getElementById("new-comment-text").value.trim();
+  if(!l||!t){alert("Please enter both label and text.");return;}
+  commentBank.push({label:l,text:t});
+  document.getElementById("new-comment-label").value="";
+  document.getElementById("new-comment-text").value="";
+  renderCommentBank();saveCommentBank();
+}
+function deleteComment(i){if(!confirm("Delete this comment?"))return;commentBank.splice(i,1);renderCommentBank();saveCommentBank();}
+function copyComment(i){var btns=document.querySelectorAll("#comment-bank-list .copy-btn");copyToClipboard(commentBank[i].text,btns[i]);}
+
+// ── Export / Import ───────────────────────────────────────────
+function exportAllData(){
+  var data={version:1,sport:"mlb",exported:new Date().toISOString(),playerLists:listPlayers,l1date:document.getElementById("l1-date").value,l2date:document.getElementById("l2-date").value,playerHistory:playerHistory,recapData:recapData,commentBank:commentBank,scripts:SCRIPTS};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download="mlb-dashboard-backup-"+new Date().toISOString().slice(0,10)+".json";a.click();URL.revokeObjectURL(url);
+  localStorage.setItem("mlb_lastBackup",Date.now().toString());
+  document.getElementById("backup-reminder").classList.add("hidden");
+}
+
+function importAllData(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(data.playerLists){listPlayers=data.playerLists;buildPlayerRows(1);buildPlayerRows(2);}
+      if(data.l1date)document.getElementById("l1-date").value=data.l1date;
+      if(data.l2date)document.getElementById("l2-date").value=data.l2date;
+      if(data.playerHistory)playerHistory=data.playerHistory;
+      if(data.recapData)recapData=data.recapData;
+      if(data.commentBank){commentBank=data.commentBank;renderCommentBank();}
+      if(data.scripts){Object.keys(data.scripts).forEach(function(k){SCRIPTS[k]=data.scripts[k];});buildScriptsSidebar();renderScripts(activeScriptKey);}
+      updatePlayerLists();renderHistory();renderBestWorst();renderRecap(1);renderRecap(2);
+      saveAllState();alert("✅ Backup imported!");
+    }catch(err){alert("❌ Import failed: "+err.message);}
+  };
+  reader.readAsText(file);input.value="";
+}
+
+function checkBackupReminder(){
+  var last=localStorage.getItem("mlb_lastBackup");
+  if(!last){localStorage.setItem("mlb_lastBackup",Date.now().toString());return;}
+  if((Date.now()-parseInt(last))/(1000*60*60*24)>=3)document.getElementById("backup-reminder").classList.remove("hidden");
+}
+function dismissBackupReminder(){document.getElementById("backup-reminder").classList.add("hidden");localStorage.setItem("mlb_lastBackup",Date.now().toString());}
+
+// ── localStorage ──────────────────────────────────────────────
+function savePlayerState(){try{localStorage.setItem("mlb_playerLists",JSON.stringify({players:listPlayers,l1date:document.getElementById("l1-date").value,l2date:document.getElementById("l2-date").value}));}catch(e){}}
+function saveHistoryState(){try{localStorage.setItem("mlb_playerHistory",JSON.stringify(playerHistory));}catch(e){}}
+function saveRecapState(){try{localStorage.setItem("mlb_recapData",JSON.stringify(recapData));}catch(e){}}
+
+function loadAllState(){
+  try{var s=localStorage.getItem("mlb_playerLists");if(s){var d=JSON.parse(s);if(d.players){listPlayers[1]=d.players[1]||listPlayers[1];listPlayers[2]=d.players[2]||listPlayers[2];}if(d.l1date)document.getElementById("l1-date").value=d.l1date;if(d.l2date)document.getElementById("l2-date").value=d.l2date;}}catch(e){}
+  try{var h=localStorage.getItem("mlb_playerHistory");if(h)playerHistory=JSON.parse(h);}catch(e){}
+  try{var r=localStorage.getItem("mlb_recapData");if(r)recapData=JSON.parse(r);}catch(e){}
+  loadCommentBank();loadScriptsState();
+}
+
+function saveAllState(){savePlayerState();saveHistoryState();saveRecapState();saveCommentBank();saveScriptsState();}
+
+// ── Clipboard ─────────────────────────────────────────────────
+function copyToClipboard(text,btn){
+  function onSuccess(){var orig=btn.textContent;btn.textContent="✓ Copied";btn.classList.add("ok");setTimeout(function(){btn.textContent=orig;btn.classList.remove("ok");},2000);}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(onSuccess).catch(function(){fallbackCopy(text,btn,onSuccess);});}
+  else fallbackCopy(text,btn,onSuccess);
+}
+function fallbackCopy(text,btn,onSuccess){var ta=document.createElement("textarea");ta.value=text;ta.style.cssText="position:fixed;top:-9999px;left:-9999px;opacity:0;";document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand("copy");onSuccess();}catch(e){btn.textContent="❌ Failed";}document.body.removeChild(ta);}
+</script>
+</body>
+</html>
