@@ -687,10 +687,11 @@ function buildList1Text() {
   var sorted = nonMiss.concat(misses);
   var lines = sorted.map(function(p) {
     var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
-    return p.name + "  {" + p.stars + "} " + p.opp + hitMark;
+    return p.team1 + " / " + p.team2 + hitMark;
   }).join("\n");
-  var text = "Players That Are Going Yard Today:\n" + date + " HR Threats List💣⚾\n\n" + lines;
-  if(dnp.length > 0) text += "\n\nDNP 🩹\n" + dnp.map(function(p){ return p.name; }).join("\n");
+  var text = "Teams that will NOT score in the 1st Inning…\n" + date + " Best NRFIs 🚫:\n\n" + lines;
+  text += "\n\nOne inning. No damage.\nThat\'s the mission🔒⚾️\n\nTap that ❤️ if your locking in tomorrow\'s NRFI 👇";
+  if(dnp.length > 0) text += "\n\n🩹 DNP :\n" + dnp.map(function(p){ return p.team1+"/"+p.team2; }).join("\n");
   return text;
 }
 
