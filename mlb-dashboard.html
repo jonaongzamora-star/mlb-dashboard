@@ -273,16 +273,17 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
   </div>
 
   <div class="plist-wrap">
-    <!-- List 1: HR Threats -->
+
+    <!-- List 1: NRFI -->
     <div class="plist-col">
-      <div class="plist-title">💣 List 1 — HR Threats</div>
+      <div class="plist-title">🚫 List 1 — NRFI</div>
       <div class="plist-subtitle" id="l1-subtitle">0 hit · 0 miss · 0 pending</div>
       <label class="field-label">Date</label>
       <input class="field-input" id="l1-date" oninput="updatePlayerLists()"/>
       <div id="l1-players"></div>
-      <button class="add-player-btn" onclick="addPlayer(1)">+ Add Player</button>
+      <button class="add-player-btn" onclick="addPlayer(1)">+ Add Matchup</button>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;">
-        <button class="copy-btn" style="background:#16a34a;" id="l1-copy-btn" onclick="copyList(1)">Copy</button>
+        <button class="copy-btn" id="l1-copy-btn" onclick="copyList(1)">Copy</button>
         <button class="copy-btn" style="background:#991b1b;color:#fca5a5;" onclick="clearList(1)">Clear</button>
         <div class="undo-bar" id="undo-bar-1"><span class="undo-msg">⚠️ List 1 cleared</span><button class="undo-btn" onclick="undoClear(1)">↩ Undo</button><span class="undo-timer" id="undo-timer-1"></span></div>
       </div>
@@ -292,16 +293,16 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
       </div>
     </div>
 
-    <!-- List 2: NRFI -->
+    <!-- List 2: HR Threats -->
     <div class="plist-col">
-      <div class="plist-title">🚫 List 2 — NRFI</div>
+      <div class="plist-title">💣 List 2 — HR Threats</div>
       <div class="plist-subtitle" id="l2-subtitle">0 hit · 0 miss · 0 pending</div>
       <label class="field-label">Date</label>
       <input class="field-input" id="l2-date" oninput="updatePlayerLists()"/>
       <div id="l2-players"></div>
-      <button class="add-player-btn" onclick="addPlayer(2)">+ Add Matchup</button>
+      <button class="add-player-btn" onclick="addPlayer(2)">+ Add Player</button>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;">
-        <button class="copy-btn" style="background:#16a34a;" id="l2-copy-btn" onclick="copyList(2)">Copy</button>
+        <button class="copy-btn" id="l2-copy-btn" onclick="copyList(2)">Copy</button>
         <button class="copy-btn" style="background:#991b1b;color:#fca5a5;" onclick="clearList(2)">Clear</button>
         <div class="undo-bar" id="undo-bar-2"><span class="undo-msg">⚠️ List 2 cleared</span><button class="undo-btn" onclick="undoClear(2)">↩ Undo</button><span class="undo-timer" id="undo-timer-2"></span></div>
       </div>
@@ -310,6 +311,34 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
         <pre class="preview-box" id="l2-preview"></pre>
       </div>
     </div>
+
+    <!-- List 3: MLB Props -->
+    <div class="plist-col">
+      <div class="plist-title">⚾ List 3 — MLB Props</div>
+      <div class="plist-subtitle" id="l3-subtitle">0 hit · 0 miss · 0 pending</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;">
+          <label class="field-label">Date</label>
+          <input class="field-input" id="l3-date" oninput="updatePlayerLists()"/>
+        </div>
+        <div style="flex:1;">
+          <label class="field-label">Day (e.g. Thursday)</label>
+          <input class="field-input" id="l3-day" style="color:#6ee7b7;font-weight:600;" oninput="updatePlayerLists()"/>
+        </div>
+      </div>
+      <div id="l3-players"></div>
+      <button class="add-player-btn" onclick="addPlayer(3)">+ Add Player</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px;">
+        <button class="copy-btn" id="l3-copy-btn" onclick="copyList(3)">Copy</button>
+        <button class="copy-btn" style="background:#991b1b;color:#fca5a5;" onclick="clearList(3)">Clear</button>
+        <div class="undo-bar" id="undo-bar-3"><span class="undo-msg">⚠️ List 3 cleared</span><button class="undo-btn" onclick="undoClear(3)">↩ Undo</button><span class="undo-timer" id="undo-timer-3"></span></div>
+      </div>
+      <div class="plist-preview-wrap">
+        <div class="preview-header"><span class="preview-label">Preview</span></div>
+        <pre class="preview-box" id="l3-preview"></pre>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -356,12 +385,12 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
       </div>
     </div>
     <div>
-      <div class="history-section-title">💣 List 1 — HR Threats</div>
+      <div class="history-section-title">🚫 List 1 — NRFI</div>
       <hr class="history-divider">
       <div class="history-table-wrap" id="history-table-1"><div class="history-empty">No history yet.</div></div>
     </div>
     <div>
-      <div class="history-section-title">🚫 List 2 — NRFI</div>
+      <div class="history-section-title">💣 List 2 — HR Threats</div>
       <hr class="history-divider">
       <div class="history-table-wrap" id="history-table-2"><div class="history-empty">No history yet.</div></div>
     </div>
@@ -499,22 +528,30 @@ var SCRIPTS = {
 
 var listPlayers = {
   1: [
-    { name: "Kyle Schwarber", opp: "vs TEX", stars: "4⭐️", status: "pending" },
-    { name: "Michael Busch",  opp: "vs WSH", stars: "5⭐️", status: "pending" },
-    { name: "Cal Raleigh",    opp: "vs CLE", stars: "5⭐️", status: "pending" },
-    { name: "Pete Alonso",    opp: "vs MIN", stars: "4⭐️", status: "pending" },
-    { name: "Eugenio Suarez", opp: "vs BOS", stars: "5⭐️", status: "pending" }
+    { team1: "ATL", team2: "PHI", status: "pending" },
+    { team1: "DET", team2: "BOS", status: "pending" },
+    { team1: "NYM", team2: "CHC", status: "pending" },
+    { team1: "TOR", team2: "AZ",  status: "pending" }
   ],
   2: [
-    { team1: "CLE", team2: "SEA", status: "pending" },
-    { team1: "TEX", team2: "NYM", status: "pending" },
-    { team1: "PIT", team2: "NYM", status: "pending" },
-    { team1: "BOS", team2: "CIN", status: "pending" }
+    { name: "Giancarlo Stanton", opp: "vs KC",  stars: "5⭐️", status: "pending" },
+    { name: "Francisco Lindor",  opp: "vs CHC", stars: "4⭐️", status: "pending" },
+    { name: "Michael Busch",     opp: "vs NYM", stars: "5⭐️", status: "pending" },
+    { name: "Max Muncy Jr.",     opp: "vs COL", stars: "4⭐️", status: "pending" },
+    { name: "Byron Buxton",      opp: "vs CIN", stars: "5⭐️", status: "pending" }
+  ],
+  3: [
+    { name: "Kris Bubic",       stat: "o5.5 Ks",   stars: "5🌟", status: "pending" },
+    { name: "Foster Griffin",   stat: "o14.5 PO",  stars: "5🌟", status: "pending" },
+    { name: "Elly De La Cruz",  stat: "o1.5 HRR",  stars: "5🌟", status: "pending" },
+    { name: "Walker Buehler",   stat: "o3.5 Ks",   stars: "4🌟", status: "pending" },
+    { name: "Braxton Ashcraft", stat: "o4.5 HA",   stars: "4🌟", status: "pending" },
+    { name: "Patrick Corbin",   stat: "u15.5 PO",  stars: "3🌟", status: "pending" }
   ]
 };
 
-var playerHistory = { 1: {}, 2: {} };
-var recapData = { 1: [], 2: [] };
+var playerHistory = { 1: {}, 2: {}, 3: {} };
+var recapData = { 1: [], 2: [], 3: [] };
 var commentBank = [
   { label: "50% OFF — Prof", text: "🚨Celebrating with 50% off 👇\nhttps://naz.cash/Join" },
   { label: "Free Discord", text: "👇Join my FREE Discord 📊\nhttps://naz.cash/Discord" },
@@ -522,8 +559,8 @@ var commentBank = [
   { label: "HIT 💚", text: "HIT 💚 Tap if you tailed" }
 ];
 var editingCommentIndex = null;
-var clearListBackup = { 1: null, 2: null };
-var clearUndoTimer = { 1: null, 2: null };
+var clearListBackup = { 1: null, 2: null, 3: null };
+var clearUndoTimer = { 1: null, 2: null, 3: null };
 var historyBackup = null;
 var historyUndoTimer = null;
 var activeScriptKey = "Welcome";
@@ -535,15 +572,19 @@ window.onload = function() {
   document.getElementById("date-badge").textContent = "⚾ " + new Date().toLocaleDateString("en-US", {month:"numeric", day:"numeric", year:"numeric"});
   var now = new Date();
   var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   var day = now.getDate();
   var suffix = day===1||day===21||day===31?"st":day===2||day===22?"nd":day===3||day===23?"rd":"th";
-  document.getElementById("l1-date").value = months[now.getMonth()] + " " + day + suffix;
-  document.getElementById("l2-date").value = (now.getMonth()+1) + "/" + day;
+  var dateStr = months[now.getMonth()] + " " + day + suffix;
+  document.getElementById("l1-date").value = dateStr;
+  document.getElementById("l2-date").value = dateStr;
+  document.getElementById("l3-date").value = dateStr;
+  document.getElementById("l3-day").value = days[now.getDay()];
   var yyyy = now.getFullYear(), mm = String(now.getMonth()+1).padStart(2,'0'), dd = String(now.getDate()).padStart(2,'0');
   document.getElementById("recap-date-1").value = yyyy+"-"+mm+"-"+dd;
   document.getElementById("recap-date-2").value = yyyy+"-"+mm+"-"+dd;
   loadAllState();
-  buildPlayerRows(1); buildPlayerRows(2);
+  buildPlayerRows(1); buildPlayerRows(2); buildPlayerRows(3);
   updatePlayerLists();
   buildScriptsSidebar(); renderScripts(activeScriptKey);
   renderCommentBank();
@@ -569,34 +610,43 @@ function buildPlayerRows(list) {
   listPlayers[list].forEach(function(p, i) {
     var row = document.createElement("div");
     row.className = "player-row " + p.status;
+    if(p.status === "dnp") { row.style.background = "#1c1708"; row.style.border = "1.5px solid #ca8a04"; }
 
     if(list === 1) {
-      var nameIn = document.createElement("input");
-      nameIn.className = "pi name"; nameIn.placeholder = "Player name"; nameIn.value = p.name || "";
-      nameIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].name = this.value; updatePlayerLists(); }; })(list,i);
-
-      var oppIn = document.createElement("input");
-      oppIn.className = "pi opp"; oppIn.placeholder = "vs OPP"; oppIn.value = p.opp || "";
-      oppIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].opp = this.value; updatePlayerLists(); }; })(list,i);
-
-      var starsIn = document.createElement("input");
-      starsIn.className = "pi stars"; starsIn.placeholder = "5⭐️"; starsIn.value = p.stars || "";
-      starsIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].stars = this.value; updatePlayerLists(); }; })(list,i);
-
-      row.appendChild(nameIn); row.appendChild(oppIn); row.appendChild(starsIn);
-    } else {
+      // NRFI: team1 / team2
       var t1 = document.createElement("input");
       t1.className = "pi team1"; t1.placeholder = "TEAM1"; t1.value = p.team1 || "";
       t1.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].team1 = this.value; updatePlayerLists(); }; })(list,i);
-
       var sep = document.createElement("span");
       sep.textContent = "/"; sep.style.cssText = "color:#64748b;font-size:14px;font-weight:700;";
-
       var t2 = document.createElement("input");
       t2.className = "pi team2"; t2.placeholder = "TEAM2"; t2.value = p.team2 || "";
       t2.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].team2 = this.value; updatePlayerLists(); }; })(list,i);
-
       row.appendChild(t1); row.appendChild(sep); row.appendChild(t2);
+    } else if(list === 2) {
+      // HR Threats: name + opp + stars
+      var nameIn = document.createElement("input");
+      nameIn.className = "pi name"; nameIn.placeholder = "Player name"; nameIn.value = p.name || "";
+      nameIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].name = this.value; updatePlayerLists(); }; })(list,i);
+      var oppIn = document.createElement("input");
+      oppIn.className = "pi opp"; oppIn.placeholder = "vs OPP"; oppIn.value = p.opp || "";
+      oppIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].opp = this.value; updatePlayerLists(); }; })(list,i);
+      var starsIn = document.createElement("input");
+      starsIn.className = "pi stars"; starsIn.placeholder = "5⭐️"; starsIn.value = p.stars || "";
+      starsIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].stars = this.value; updatePlayerLists(); }; })(list,i);
+      row.appendChild(nameIn); row.appendChild(oppIn); row.appendChild(starsIn);
+    } else {
+      // MLB Props: name + stat + stars
+      var nameIn3 = document.createElement("input");
+      nameIn3.className = "pi name"; nameIn3.placeholder = "Player name"; nameIn3.value = p.name || "";
+      nameIn3.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].name = this.value; updatePlayerLists(); }; })(list,i);
+      var statIn = document.createElement("input");
+      statIn.className = "pi stat"; statIn.placeholder = "o5.5 Ks"; statIn.value = p.stat || "";
+      statIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].stat = this.value; updatePlayerLists(); }; })(list,i);
+      var starsIn3 = document.createElement("input");
+      starsIn3.className = "pi stars"; starsIn3.placeholder = "5🌟"; starsIn3.value = p.stars || "";
+      starsIn3.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].stars = this.value; updatePlayerLists(); }; })(list,i);
+      row.appendChild(nameIn3); row.appendChild(statIn); row.appendChild(starsIn3);
     }
 
     var statusBtn = document.createElement("button");
@@ -622,8 +672,9 @@ function buildPlayerRows(list) {
 }
 
 function addPlayer(list) {
-  if(list === 1) listPlayers[1].push({ name:"", opp:"", stars:"5⭐️", status:"pending" });
-  else listPlayers[2].push({ team1:"", team2:"", status:"pending" });
+  if(list === 1) listPlayers[1].push({ team1:"", team2:"", status:"pending" });
+  else if(list === 2) listPlayers[2].push({ name:"", opp:"", stars:"5⭐️", status:"pending" });
+  else listPlayers[3].push({ name:"", stat:"", stars:"5🌟", status:"pending" });
   buildPlayerRows(list); updatePlayerLists();
 }
 
@@ -652,39 +703,60 @@ function buildList2Text() {
   var sorted = nonMiss.concat(misses);
   var lines = sorted.map(function(p) {
     var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
-    return p.team1 + " / " + p.team2 + hitMark;
+    return p.name + " HR {" + p.stars + "} " + p.opp + hitMark;
   }).join("\n");
-  var text = "Teams that will NOT score in the 1st Inning…\n" + date + " Best NRFIs 🚫:\n\n" + lines;
-  text += "\n\nOne inning. No damage. \nThat's the mission🔒⚾️";
-  if(dnp.length > 0) text += "\n\n🩹 DNP\n" + dnp.map(function(p){ return p.team1+"/"+p.team2; }).join("\n");
+  var text = "Players That Are Going Yard Today:\n" + date + " HR Threats List 💣⚾️\n\n" + lines;
+  text += "\n\nTap like ❤️ to confirm you\'re cashing a homer slip";
+  if(dnp.length > 0) text += "\n\n🩹 DNP :\n" + dnp.map(function(p){ return p.name; }).join("\n");
+  return text;
+}
+
+function buildList3Text() {
+  var date = document.getElementById("l3-date") ? document.getElementById("l3-date").value : "";
+  var day = document.getElementById("l3-day") ? document.getElementById("l3-day").value : "Today";
+  var active = listPlayers[3].filter(function(p){ return p.status !== "dnp"; });
+  var dnp = listPlayers[3].filter(function(p){ return p.status === "dnp"; });
+  var nonMiss = active.filter(function(p){ return p.status !== "miss"; });
+  var misses = active.filter(function(p){ return p.status === "miss"; });
+  var sorted = nonMiss.concat(misses);
+  var lines = sorted.map(function(p) {
+    var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
+    return p.name + " " + p.stat + hitMark + " {" + p.stars + "}";
+  }).join("\n");
+  var text = "MLB Players That Will Cash " + day + ":\n" + date + " \"Must Bet List\"\n\n" + lines;
+  text += "\n\n❤️ Like If Tailing, Let\'s Cash.";
+  if(dnp.length > 0) text += "\n\nDNP 🩹 :\n" + dnp.map(function(p){ return p.name + " " + p.stat; }).join("\n");
   return text;
 }
 
 function updatePlayerLists() {
   document.getElementById("l1-preview").textContent = buildList1Text();
   document.getElementById("l2-preview").textContent = buildList2Text();
-  var h1=listPlayers[1].filter(function(p){return p.status==="hit";}).length;
-  var m1=listPlayers[1].filter(function(p){return p.status==="miss";}).length;
-  var d1=listPlayers[1].filter(function(p){return p.status==="dnp";}).length;
-  var h2=listPlayers[2].filter(function(p){return p.status==="hit";}).length;
-  var m2=listPlayers[2].filter(function(p){return p.status==="miss";}).length;
-  var d2=listPlayers[2].filter(function(p){return p.status==="dnp";}).length;
-  document.getElementById("l1-subtitle").textContent = h1+" hit · "+m1+" miss · "+d1+" dnp · "+(listPlayers[1].length-h1-m1-d1)+" pending";
-  document.getElementById("l2-subtitle").textContent = h2+" hit · "+m2+" miss · "+d2+" dnp · "+(listPlayers[2].length-h2-m2-d2)+" pending";
+  var l3el = document.getElementById("l3-preview");
+  if(l3el) l3el.textContent = buildList3Text();
+  [1,2,3].forEach(function(list) {
+    var h=listPlayers[list].filter(function(p){return p.status==="hit";}).length;
+    var m=listPlayers[list].filter(function(p){return p.status==="miss";}).length;
+    var d=listPlayers[list].filter(function(p){return p.status==="dnp";}).length;
+    var el = document.getElementById("l"+list+"-subtitle");
+    if(el) el.textContent = h+" hit · "+m+" miss · "+d+" dnp · "+(listPlayers[list].length-h-m-d)+" pending";
+  });
   savePlayerState();
 }
 
 function copyList(list) {
   var btn = document.getElementById("l"+list+"-copy-btn");
-  copyToClipboard(list===1?buildList1Text():buildList2Text(), btn);
+  var text = list===1?buildList1Text():list===2?buildList2Text():buildList3Text();
+  copyToClipboard(text, btn);
 }
 
 function clearList(list) {
   if(!confirm("Clear List "+list+"? This cannot be undone immediately.")) return;
   clearListBackup[list] = JSON.parse(JSON.stringify(listPlayers[list]));
   listPlayers[list].forEach(function(p){
-    if(list===1){p.name="";p.opp="";p.status="pending";}
-    else{p.team1="";p.team2="";p.status="pending";}
+    if(list===1){p.team1="";p.team2="";p.status="pending";}
+    else if(list===2){p.name="";p.opp="";p.status="pending";}
+    else{p.name="";p.stat="";p.status="pending";}
   });
   buildPlayerRows(list); updatePlayerLists();
   var bar = document.getElementById("undo-bar-"+list);
@@ -738,9 +810,9 @@ function updatePlayerWarnings() {
 function logToday() {
   var now = new Date();
   var dateStr = (now.getMonth()+1)+"/"+now.getDate()+"/"+String(now.getFullYear()).slice(2);
-  [1,2].forEach(function(list){
+  [1,2,3].forEach(function(list){
     listPlayers[list].forEach(function(p){
-      var key = list===1?p.name:(p.team1+"/"+p.team2);
+      var key = list===1?(p.team1+"/"+p.team2):list===2?p.name:(p.name+"|"+p.stat);
       if(!key.trim()||p.status==="pending"||p.status==="dnp") return;
       if(!playerHistory[list][key]) playerHistory[list][key]=[];
       var already = playerHistory[list][key].some(function(e){return e.date===dateStr;});
@@ -761,7 +833,7 @@ function getStreak(entries) {
 }
 
 function renderHistory() {
-  [1,2].forEach(function(list){
+  [1,2,3].forEach(function(list){
     var container=document.getElementById("history-table-"+list);
     var players=Object.keys(playerHistory[list]);
     if(players.length===0){container.innerHTML="<div class='history-empty'>No history yet.</div>";return;}
@@ -814,7 +886,7 @@ function undoClearHistory() {
 
 // ── Best/Worst ────────────────────────────────────────────────
 function renderBestWorst() {
-  [1,2].forEach(function(list){
+  [1,2,3].forEach(function(list){
     var container=document.getElementById("bw-table-"+list);
     var players=Object.keys(playerHistory[list]);
     if(players.length===0){container.innerHTML="<div class='bw-empty'>No history logged yet.</div>";return;}
@@ -1105,12 +1177,15 @@ function checkBackupReminder(){
 function dismissBackupReminder(){document.getElementById("backup-reminder").classList.add("hidden");localStorage.setItem("mlb_lastBackup",Date.now().toString());}
 
 // ── localStorage ──────────────────────────────────────────────
-function savePlayerState(){try{localStorage.setItem("mlb_playerLists",JSON.stringify({players:listPlayers,l1date:document.getElementById("l1-date").value,l2date:document.getElementById("l2-date").value}));}catch(e){}}
+function savePlayerState(){try{
+  var l3date=document.getElementById("l3-date"); var l3day=document.getElementById("l3-day");
+  localStorage.setItem("mlb_playerLists",JSON.stringify({players:listPlayers,l1date:document.getElementById("l1-date").value,l2date:document.getElementById("l2-date").value,l3date:l3date?l3date.value:"",l3day:l3day?l3day.value:""}));
+}catch(e){}}
 function saveHistoryState(){try{localStorage.setItem("mlb_playerHistory",JSON.stringify(playerHistory));}catch(e){}}
 function saveRecapState(){try{localStorage.setItem("mlb_recapData",JSON.stringify(recapData));}catch(e){}}
 
 function loadAllState(){
-  try{var s=localStorage.getItem("mlb_playerLists");if(s){var d=JSON.parse(s);if(d.players){listPlayers[1]=d.players[1]||listPlayers[1];listPlayers[2]=d.players[2]||listPlayers[2];}if(d.l1date)document.getElementById("l1-date").value=d.l1date;if(d.l2date)document.getElementById("l2-date").value=d.l2date;}}catch(e){}
+  try{var s=localStorage.getItem("mlb_playerLists");if(s){var d=JSON.parse(s);if(d.players){listPlayers[1]=d.players[1]||listPlayers[1];listPlayers[2]=d.players[2]||listPlayers[2];listPlayers[3]=d.players[3]||listPlayers[3];}if(d.l1date)document.getElementById("l1-date").value=d.l1date;if(d.l2date)document.getElementById("l2-date").value=d.l2date;var l3d=document.getElementById("l3-date");var l3dy=document.getElementById("l3-day");if(d.l3date&&l3d)l3d.value=d.l3date;if(d.l3day&&l3dy)l3dy.value=d.l3day;}}catch(e){}
   try{var h=localStorage.getItem("mlb_playerHistory");if(h)playerHistory=JSON.parse(h);}catch(e){}
   try{var r=localStorage.getItem("mlb_recapData");if(r)recapData=JSON.parse(r);}catch(e){}
   loadCommentBank();loadScriptsState();
