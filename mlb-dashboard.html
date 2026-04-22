@@ -100,6 +100,7 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
 .history-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .history-log-btn { background: #16a34a; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .history-log-btn:hover { background: #15803d; }
+.history-log-btn.logged { background: #1e293b !important; color: #475569 !important; border: 1.5px solid #334155; cursor: not-allowed; }
 .history-clear-btn { background: #1e293b; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
 .history-clear-btn:hover { background: #ef4444; color: #fff; }
 .history-section-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
@@ -382,7 +383,13 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <div class="undo-bar" id="undo-bar-history"><span class="undo-msg">⚠️ History cleared</span><button class="undo-btn" onclick="undoClearHistory()">↩ Undo</button><span class="undo-timer" id="undo-timer-history"></span></div>
         <button class="history-clear-btn" onclick="clearHistory()">🗑 Clear All</button>
-        <button class="history-log-btn" onclick="logToday()">📥 Log Today's Results</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="date" id="log-date-picker" class="recap-date-input" style="width:140px;" onchange="updateLogButtons()"/>
+          <button class="history-log-btn" style="background:#0369a1;font-size:12px;padding:8px 14px;" onclick="logList(1)">📥 Log NRFI</button>
+          <button class="history-log-btn" style="background:#b45309;font-size:12px;padding:8px 14px;" onclick="logList(2)">📥 Log HR</button>
+          <button class="history-log-btn" style="background:#166534;font-size:12px;padding:8px 14px;" onclick="logList(3)">📥 Log Props</button>
+          <button class="history-log-btn" style="font-size:12px;padding:8px 14px;" onclick="logToday()">📥 Log All</button>
+        </div>
       </div>
     </div>
     <div>
@@ -421,11 +428,15 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
   <div class="recap-wrap">
     <div class="recap-alert hidden" id="recap-alert-1">
       <div class="recap-alert-icon">🚨</div>
-      <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>HR Threats hit 75%+ in 3 of the last 5 days.</div>
+      <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>NRFI hit 75%+ in 3 of the last 5 days.</div>
     </div>
     <div class="recap-alert hidden" id="recap-alert-2">
       <div class="recap-alert-icon">🚨</div>
       <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>NRFI hit 75%+ in 3 of the last 5 days.</div>
+    </div>
+    <div class="recap-alert hidden" id="recap-alert-2">
+      <div class="recap-alert-icon">🚨</div>
+      <div class="recap-alert-text"><strong>Time to post a major recap!</strong><br>HR Threats hit 75%+ in 3 of the last 5 days.</div>
     </div>
     <div class="hidden" id="recap-draft-wrap" style="background:#1e293b;border:1.5px solid #16a34a;border-radius:10px;padding:16px;margin-top:4px;">
       <div style="font-size:13px;font-weight:700;color:#86efac;margin-bottom:12px;">📝 Recap Draft</div>
@@ -438,7 +449,7 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
     </div>
     <div class="recap-lists">
       <div class="recap-list-col">
-        <div class="recap-list-title">💣 List 1 — HR Threats</div>
+        <div class="recap-list-title">🚫 List 1 — NRFI</div>
         <div class="recap-log-row">
           <input type="date" class="recap-date-input" id="recap-date-1"/>
           <select class="recap-score-select" id="recap-score-1">
@@ -465,7 +476,7 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
         <div class="recap-entries" id="recap-entries-1"><div class="recap-empty">No entries yet.</div></div>
       </div>
       <div class="recap-list-col">
-        <div class="recap-list-title">🚫 List 2 — NRFI</div>
+        <div class="recap-list-title">💣 List 2 — HR Threats</div>
         <div class="recap-log-row">
           <input type="date" class="recap-date-input" id="recap-date-2"/>
           <select class="recap-score-select" id="recap-score-2">
@@ -585,6 +596,10 @@ window.onload = function() {
   document.getElementById("recap-date-1").value = yyyy+"-"+mm+"-"+dd;
   document.getElementById("recap-date-2").value = yyyy+"-"+mm+"-"+dd;
   loadAllState();
+  var now2 = new Date();
+  var yy=now2.getFullYear(), mm2=String(now2.getMonth()+1).padStart(2,'0'), dd2=String(now2.getDate()).padStart(2,'0');
+  var picker = document.getElementById("log-date-picker");
+  if(picker) picker.value = yy+"-"+mm2+"-"+dd2;
   buildPlayerRows(1); buildPlayerRows(2); buildPlayerRows(3);
   updatePlayerLists();
   buildScriptsSidebar(); renderScripts(activeScriptKey);
@@ -809,9 +824,44 @@ function updatePlayerWarnings() {
 }
 
 // ── History ───────────────────────────────────────────────────
-function logToday() {
+function getLogDateStr() {
+  var picker = document.getElementById("log-date-picker");
+  if(picker && picker.value) {
+    var dp = picker.value.split("-");
+    return parseInt(dp[1]) + "/" + parseInt(dp[2]) + "/" + dp[0].slice(2);
+  }
   var now = new Date();
-  var dateStr = (now.getMonth()+1)+"/"+now.getDate()+"/"+String(now.getFullYear()).slice(2);
+  return (now.getMonth()+1) + "/" + now.getDate() + "/" + String(now.getFullYear()).slice(2);
+}
+
+function updateLogButtons() {
+  var dateStr = getLogDateStr();
+  var labels = ["","📥 Log NRFI","📥 Log HR","📥 Log Props"];
+  [1,2,3].forEach(function(list) {
+    var logged = Object.keys(playerHistory[list]).some(function(name) {
+      return playerHistory[list][name].some(function(e){ return e.date === dateStr; });
+    });
+    var allBtns = document.querySelectorAll(".history-log-btn");
+    var btn = allBtns[list]; // 0=Clear, 1=NRFI, 2=HR, 3=Props, 4=All
+    if(btn) { btn.textContent = logged ? "✓ "+labels[list].slice(3) : labels[list]; btn.classList.toggle("logged", logged); }
+  });
+}
+
+function logList(list) {
+  var dateStr = getLogDateStr();
+  listPlayers[list].forEach(function(p) {
+    var key = list===1?(p.team1+"/"+p.team2):list===2?p.name:(p.name+"|"+p.stat);
+    if(!key || !key.trim()) return;
+    if(p.status === "pending" || p.status === "dnp") return;
+    if(!playerHistory[list][key]) playerHistory[list][key] = [];
+    var already = playerHistory[list][key].some(function(e){ return e.date === dateStr; });
+    if(!already) playerHistory[list][key].push({ date: dateStr, stat: list===2?p.opp:list===3?p.stat:"", result: p.status });
+  });
+  renderHistory(); renderBestWorst(); saveHistoryState(); updateLogButtons();
+}
+
+function logToday() {
+  var dateStr = getLogDateStr();
   [1,2,3].forEach(function(list){
     listPlayers[list].forEach(function(p){
       var key = list===1?(p.team1+"/"+p.team2):list===2?p.name:(p.name+"|"+p.stat);
@@ -822,9 +872,7 @@ function logToday() {
     });
   });
   renderHistory(); renderBestWorst(); saveHistoryState(); updatePlayerWarnings();
-  var btn = document.querySelector(".history-log-btn");
-  var orig = btn.textContent; btn.textContent="✓ Logged!"; btn.style.background="#166534";
-  setTimeout(function(){btn.textContent=orig;btn.style.background="";},2000);
+  updateLogButtons();
 }
 
 function getStreak(entries) {
