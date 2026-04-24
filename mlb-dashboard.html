@@ -480,16 +480,23 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
         <div class="recap-log-row">
           <input type="date" class="recap-date-input" id="recap-date-2"/>
           <select class="recap-score-select" id="recap-score-2">
+            <option value="5/5">5/5 🔥</option>
+            <option value="4/5">4/5 ✅</option>
+            <option value="3/5">3/5 ✅</option>
+            <option value="2/5">2/5</option>
+            <option value="1/5">1/5</option>
+            <option value="0/5">0/5</option>
+            <option disabled>── 4 players ──</option>
             <option value="4/4">4/4 🔥</option>
             <option value="3/4">3/4 ✅</option>
             <option value="2/4">2/4</option>
             <option value="1/4">1/4</option>
             <option value="0/4">0/4</option>
-            <option disabled>── 3 matchups ──</option>
+            <option disabled>── 3 players ──</option>
             <option value="3/3">3/3 🔥</option>
             <option value="2/3">2/3 ✅</option>
             <option value="1/3">1/3</option>
-            <option disabled>── 2 matchups ──</option>
+            <option disabled>── 2 players ──</option>
             <option value="2/2">2/2 🔥</option>
             <option value="1/2">1/2</option>
           </select>
@@ -1022,9 +1029,11 @@ function renderRecap(list){
 function showRecapPlayers(btn){
   var list=parseInt(btn.getAttribute("data-list"));var date=btn.getAttribute("data-date");
   var d=new Date(date+"T00:00:00");var dateLabel=d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-  var listName=list===1?"💣 HR Threats":"🚫 NRFI";
+  var listName=list===1?"🚫 NRFI":list===2?"💣 HR Threats":"⚾ MLB Props";
+  // Convert recap date YYYY-MM-DD to history format M/D/YY
+  var dp=date.split("-");var histDate=parseInt(dp[1])+"/"+parseInt(dp[2])+"/"+dp[0].slice(2);
   var players=playerHistory[list];var found=[];
-  Object.keys(players).forEach(function(name){var entry=players[name].find(function(e){return e.date===date;});if(entry)found.push({name:name,result:entry.result});});
+  Object.keys(players).forEach(function(name){var entry=players[name].find(function(e){return e.date===histDate;});if(entry)found.push({name:name,result:entry.result});});
   found.sort(function(a,b){return a.result==="hit"?-1:1;});
   document.getElementById("recap-popup-title-text").textContent=listName+" — "+dateLabel;
   var body="";
@@ -1037,8 +1046,11 @@ function showRecapPlayers(btn){
 function closeRecapPopup(e){if(!e||e.target===document.getElementById("recap-popup-overlay"))document.getElementById("recap-popup-overlay").style.display="none";}
 
 function generateRecapDraft(list){
-  var listName=list===1?"HR Threats 💣":"NRFI 🚫";
-  var last5dates=recapData[list].slice(-5).map(function(e){return e.date;});
+  var listName=list===1?"🚫 NRFI":list===2?"💣 HR Threats":"⚾ MLB Props";
+  // Convert recap dates YYYY-MM-DD to history format M/D/YY
+  var last5dates=recapData[list].slice(-5).map(function(e){
+    var dp=e.date.split("-"); return parseInt(dp[1])+"/"+parseInt(dp[2])+"/"+dp[0].slice(2);
+  });
   var histPlayers=playerHistory[list]||{};
   var allEntries=[];
   Object.keys(histPlayers).forEach(function(name){histPlayers[name].forEach(function(e){if(last5dates.indexOf(e.date)!==-1)allEntries.push({name:name,result:e.result,date:e.date});});});
