@@ -652,7 +652,7 @@ function buildPlayerRows(list) {
       nameIn.className = "pi name"; nameIn.placeholder = "Player name"; nameIn.value = p.name || "";
       nameIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].name = this.value; updatePlayerLists(); }; })(list,i);
       var oppIn = document.createElement("input");
-      oppIn.className = "pi opp"; oppIn.placeholder = "vs OPP"; oppIn.value = p.opp || "";
+      oppIn.className = "pi opp"; oppIn.placeholder = "CHC"; oppIn.value = p.opp || "";
       oppIn.oninput = (function(lst,idx){ return function(){ listPlayers[lst][idx].opp = this.value; updatePlayerLists(); }; })(list,i);
       var starsIn = document.createElement("input");
       starsIn.className = "pi stars"; starsIn.placeholder = "5⭐️"; starsIn.value = p.stars || "";
@@ -727,7 +727,8 @@ function buildList2Text() {
   var sorted = nonMiss.concat(misses);
   var lines = sorted.map(function(p) {
     var hitMark = p.status==="hit"?" ✅":p.status==="miss"?" ❌":"";
-    return p.name + " HR {" + p.stars + "} " + p.opp + hitMark;
+    var opp = p.opp && !p.opp.toLowerCase().startsWith("vs") ? "vs " + p.opp : p.opp;
+    return p.name + " HR {" + p.stars + "} " + opp + hitMark;
   }).join("\n");
   var text = "Players That Are Going Yard Today:\n" + date + " HR Threats List 💣⚾️\n\n" + lines;
   text += "\n\nTap like ❤️ to confirm you\'re cashing a homer slip";
@@ -849,7 +850,7 @@ function updateLogButtons() {
       return playerHistory[list][name].some(function(e){ return e.date === dateStr; });
     });
     var allBtns = document.querySelectorAll(".history-log-btn");
-    var btn = allBtns[list]; // 0=Clear, 1=NRFI, 2=HR, 3=Props, 4=All
+    var btn = allBtns[list-1]; // 0=Log NRFI, 1=Log HR, 2=Log Props, 3=Log All
     if(btn) { btn.textContent = logged ? "✓ "+labels[list].slice(3) : labels[list]; btn.classList.toggle("logged", logged); }
   });
 }
