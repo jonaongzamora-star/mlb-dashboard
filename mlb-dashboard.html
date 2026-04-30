@@ -858,12 +858,15 @@ function updateLogButtons() {
 function logList(list) {
   var dateStr = getLogDateStr();
   listPlayers[list].forEach(function(p) {
-    var key = list===1?(p.team1+"/"+p.team2):list===2?p.name:(p.name+"|"+p.stat);
-    if(!key || !key.trim()) return;
+    var key = list===1?(p.team1+"/"+p.team2).trim():list===2?(p.name||"").trim():(p.name+"|"+p.stat).trim();
+    if(!key) return;
     if(p.status === "pending" || p.status === "dnp") return;
     if(!playerHistory[list][key]) playerHistory[list][key] = [];
     var already = playerHistory[list][key].some(function(e){ return e.date === dateStr; });
-    if(!already) playerHistory[list][key].push({ date: dateStr, stat: list===2?p.opp:list===3?p.stat:"", result: p.status });
+    if(!already) {
+      var stat = list===1?"":list===2?(p.opp||""):p.stat||"";
+      playerHistory[list][key].push({ date: dateStr, stat: stat, result: p.status });
+    }
   });
   renderHistory(); renderBestWorst(); saveHistoryState(); updateLogButtons();
 }
