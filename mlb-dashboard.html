@@ -100,7 +100,7 @@ pre { font-family: "Courier New", monospace; white-space: pre-wrap; word-break: 
 .history-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
 .history-log-btn { background: #16a34a; color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; }
 .history-log-btn:hover { background: #15803d; }
-.history-log-btn.logged { background: #1e293b !important; color: #475569 !important; border: 1.5px solid #334155; cursor: not-allowed; }
+.history-log-btn.logged { background: #1e293b !important; color: #475569 !important; border: 1.5px solid #334155; cursor: default; opacity: 0.7; }
 .history-clear-btn { background: #1e293b; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 8px; padding: 8px 16px; font-size: 13px; cursor: pointer; }
 .history-clear-btn:hover { background: #ef4444; color: #fff; }
 .history-section-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 12px; }
@@ -845,13 +845,18 @@ function getLogDateStr() {
 function updateLogButtons() {
   var dateStr = getLogDateStr();
   var labels = ["","📥 Log NRFI","📥 Log HR","📥 Log Props"];
+  var allBtns = document.querySelectorAll(".history-log-btn");
   [1,2,3].forEach(function(list) {
     var logged = Object.keys(playerHistory[list]).some(function(name) {
       return playerHistory[list][name].some(function(e){ return e.date === dateStr; });
     });
-    var allBtns = document.querySelectorAll(".history-log-btn");
-    var btn = allBtns[list-1]; // 0=Log NRFI, 1=Log HR, 2=Log Props, 3=Log All
-    if(btn) { btn.textContent = logged ? "✓ "+labels[list].slice(3) : labels[list]; btn.classList.toggle("logged", logged); }
+    var btn = allBtns[list-1]; // 0=Log NRFI, 1=Log HR, 2=Log Props
+    if(btn) {
+      btn.textContent = logged ? "✓ " + labels[list].replace("📥 ","") : labels[list];
+      btn.classList.toggle("logged", logged);
+      // Never fully disable — just visually indicate
+      btn.disabled = false;
+    }
   });
 }
 
@@ -879,7 +884,7 @@ function logToday() {
       if(!key.trim()||p.status==="pending"||p.status==="dnp") return;
       if(!playerHistory[list][key]) playerHistory[list][key]=[];
       var already = playerHistory[list][key].some(function(e){return e.date===dateStr;});
-      if(!already) playerHistory[list][key].push({date:dateStr, stat:list===1?p.opp:"", result:p.status});
+      if(!already) playerHistory[list][key].push({date:dateStr, stat:list===1?"":list===2?(p.opp||""):p.stat||"", result:p.status});
     });
   });
   renderHistory(); renderBestWorst(); saveHistoryState(); updatePlayerWarnings();
@@ -925,7 +930,7 @@ function renderHistory() {
 function clearHistory() {
   if(!confirm("Clear all history? This cannot be undone immediately.")) return;
   historyBackup=JSON.parse(JSON.stringify(playerHistory));
-  playerHistory={1:{},2:{}}; renderHistory(); saveHistoryState();
+  playerHistory={1:{},2:{},3:{}}; renderHistory(); saveHistoryState();
   var bar=document.getElementById("undo-bar-history");
   var timerEl=document.getElementById("undo-timer-history");
   bar.classList.add("show");
@@ -1252,7 +1257,7 @@ function saveRecapState(){try{localStorage.setItem("mlb_recapData",JSON.stringif
 
 function loadAllState(){
   try{var s=localStorage.getItem("mlb_playerLists");if(s){var d=JSON.parse(s);if(d.players){listPlayers[1]=d.players[1]||listPlayers[1];listPlayers[2]=d.players[2]||listPlayers[2];listPlayers[3]=d.players[3]||listPlayers[3];}if(d.l1date)document.getElementById("l1-date").value=d.l1date;if(d.l2date)document.getElementById("l2-date").value=d.l2date;var l3d=document.getElementById("l3-date");var l3dy=document.getElementById("l3-day");if(d.l3date&&l3d)l3d.value=d.l3date;if(d.l3day&&l3dy)l3dy.value=d.l3day;}}catch(e){}
-  try{var h=localStorage.getItem("mlb_playerHistory");if(h)playerHistory=JSON.parse(h);}catch(e){}
+  try{var h=localStorage.getItem("mlb_playerHistory");if(h){var ph=JSON.parse(h);playerHistory[1]=ph[1]||{};playerHistory[2]=ph[2]||{};playerHistory[3]=ph[3]||{};}}catch(e){}
   try{var r=localStorage.getItem("mlb_recapData");if(r)recapData=JSON.parse(r);}catch(e){}
   loadCommentBank();loadScriptsState();
 }
