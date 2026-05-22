@@ -612,6 +612,10 @@ window.onload = function() {
   buildScriptsSidebar(); renderScripts(activeScriptKey);
   renderCommentBank();
   checkBackupReminder();
+  renderHistory();
+  renderBestWorst();
+  renderRecap(1); renderRecap(2);
+  updateLogButtons();
 };
 
 function switchTab(id) {
