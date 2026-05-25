@@ -589,6 +589,7 @@ var editingScriptIndex = null;
 
 // ── Init ──────────────────────────────────────────────────────
 window.onload = function() {
+  suppressSave = true;
   document.getElementById("date-badge").textContent = "⚾ " + new Date().toLocaleDateString("en-US", {month:"numeric", day:"numeric", year:"numeric"});
   var now = new Date();
   var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -917,6 +918,7 @@ function getStreak(entries) {
 function renderHistory() {
   [1,2,3].forEach(function(list){
     var container=document.getElementById("history-table-"+list);
+    if(!container) return;
     var players=Object.keys(playerHistory[list]);
     if(players.length===0){container.innerHTML="<div class='history-empty'>No history yet.</div>";return;}
     var allDates=[];
@@ -970,6 +972,7 @@ function undoClearHistory() {
 function renderBestWorst() {
   [1,2,3].forEach(function(list){
     var container=document.getElementById("bw-table-"+list);
+    if(!container) return;
     var players=Object.keys(playerHistory[list]);
     if(players.length===0){container.innerHTML="<div class='bw-empty'>No history logged yet.</div>";return;}
     var stats=players.map(function(name){
@@ -1029,6 +1032,7 @@ function renderRecap(list){
   var entries=recapData[list];
   var barEl=document.getElementById("recap-bar-"+list);
   var container=document.getElementById("recap-entries-"+list);
+  if(!barEl || !container) return;
   barEl.innerHTML=entries.slice(-10).map(function(e){
     var sp=e.score.split("/");var sh=parseInt(sp[0]);var st=parseInt(sp[1]);var pct=st>0?sh/st:0;
     var bg=(sh===st)?"#f97316":pct>=0.75?"#22c55e":"#334155";
@@ -1272,7 +1276,11 @@ function saveHistoryState(){
   if(suppressSave) return;
   try {
     var snapshot = JSON.parse(JSON.stringify(playerHistory));
-    localStorage.setItem("mlb_playerHistory", JSON.stringify(snapshot));
+    var str = JSON.stringify(snapshot);
+    localStorage.setItem("mlb_playerHistory", str);
+    // Verify it saved
+    var verify = localStorage.getItem("mlb_playerHistory");
+    if(!verify) console.warn("saveHistoryState: save failed silently");
   } catch(e){ console.warn("saveHistoryState failed:", e); }
 }
 function saveRecapState(){try{localStorage.setItem("mlb_recapData",JSON.stringify(recapData));}catch(e){}}
