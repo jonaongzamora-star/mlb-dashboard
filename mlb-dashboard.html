@@ -570,6 +570,7 @@ var listPlayers = {
 };
 
 var playerHistory = { 1: {}, 2: {}, 3: {} };
+var suppressSave = false;
 var recapData = { 1: [], 2: [], 3: [] };
 var commentBank = [
   { label: "50% OFF — Prof", text: "🚨Celebrating with 50% off 👇\nhttps://naz.cash/Join" },
@@ -603,6 +604,7 @@ window.onload = function() {
   document.getElementById("recap-date-1").value = yyyy+"-"+mm+"-"+dd;
   document.getElementById("recap-date-2").value = yyyy+"-"+mm+"-"+dd;
   loadAllState();
+  suppressSave = false;
   var now2 = new Date();
   var yy=now2.getFullYear(), mm2=String(now2.getMonth()+1).padStart(2,'0'), dd2=String(now2.getDate()).padStart(2,'0');
   var picker = document.getElementById("log-date-picker");
@@ -1266,12 +1268,28 @@ function savePlayerState(){try{
   var l3date=document.getElementById("l3-date"); var l3day=document.getElementById("l3-day");
   localStorage.setItem("mlb_playerLists",JSON.stringify({players:JSON.parse(JSON.stringify(listPlayers)),l1date:document.getElementById("l1-date").value,l2date:document.getElementById("l2-date").value,l3date:l3date?l3date.value:"",l3day:l3day?l3day.value:""}));
 }catch(e){}}
-function saveHistoryState(){try{localStorage.setItem("mlb_playerHistory",JSON.stringify(playerHistory));}catch(e){}}
+function saveHistoryState(){
+  if(suppressSave) return;
+  try {
+    var snapshot = JSON.parse(JSON.stringify(playerHistory));
+    localStorage.setItem("mlb_playerHistory", JSON.stringify(snapshot));
+  } catch(e){ console.warn("saveHistoryState failed:", e); }
+}
 function saveRecapState(){try{localStorage.setItem("mlb_recapData",JSON.stringify(recapData));}catch(e){}}
 
 function loadAllState(){
   try{var s=localStorage.getItem("mlb_playerLists");if(s){var d=JSON.parse(s);if(d.players){if(d.players[1]&&d.players[1].length>0)listPlayers[1]=JSON.parse(JSON.stringify(d.players[1]));if(d.players[2]&&d.players[2].length>0)listPlayers[2]=JSON.parse(JSON.stringify(d.players[2]));if(d.players[3]&&d.players[3].length>0)listPlayers[3]=JSON.parse(JSON.stringify(d.players[3]));}if(d.l1date)document.getElementById("l1-date").value=d.l1date;if(d.l2date)document.getElementById("l2-date").value=d.l2date;var l3d=document.getElementById("l3-date");var l3dy=document.getElementById("l3-day");if(d.l3date&&l3d)l3d.value=d.l3date;if(d.l3day&&l3dy)l3dy.value=d.l3day;}}catch(e){}
-  try{var h=localStorage.getItem("mlb_playerHistory");if(h){var ph=JSON.parse(h);playerHistory[1]=ph[1]||{};playerHistory[2]=ph[2]||{};playerHistory[3]=ph[3]||{};}}catch(e){}
+  try {
+    var h = localStorage.getItem("mlb_playerHistory");
+    if(h) {
+      var ph = JSON.parse(h);
+      if(ph && typeof ph === "object") {
+        if(ph[1] && Object.keys(ph[1]).length > 0) playerHistory[1] = ph[1];
+        if(ph[2] && Object.keys(ph[2]).length > 0) playerHistory[2] = ph[2];
+        if(ph[3] && Object.keys(ph[3]).length > 0) playerHistory[3] = ph[3];
+      }
+    }
+  } catch(e){ console.warn("loadHistory failed:", e); }
   try{var r=localStorage.getItem("mlb_recapData");if(r)recapData=JSON.parse(r);}catch(e){}
   loadCommentBank();loadScriptsState();
 }
